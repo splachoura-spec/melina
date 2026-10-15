@@ -1,0 +1,1251 @@
+<!doctype html>
+<html lang="el"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"></head><body>
+<title>Κουίζ Υλικών Σωμάτων</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Commissioner:wght@400;600;700&display=swap">
+<style>
+/* Layout: one centred question card at a time (kid-sized type and buttons); results = score + coloured bar per lesson + "what to fix" cards.
+   Deliberately one bright light look for a 10-year-old; each lesson (concept) has its own colour. */
+:root{
+  --bg:#f1f7fb;
+  --card:#ffffff;
+  --soft:#eef4f9;
+  --line:#d4e2ec;
+  --fg:#1d2b36;
+  --muted:#5a6d7a;
+  --brand:#ff6b4a;
+  --brand-soft:#ffe7e0;
+  --good:#1f9e5a; --good-soft:#dff5e8;
+  --bad:#d93a2b;  --bad-soft:#fde5e2;
+  --mid:#d98a00;  --mid-soft:#fff1d6;
+  --c:#ff6b4a; --c-soft:#ffe7e0;   /* current lesson colour, set from JS */
+  --f-display:"Comfortaa","Commissioner",system-ui,sans-serif;
+  --f-body:"Commissioner",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:14px 40px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+h1{font-size:30px;line-height:1.15}
+h2{font-size:22px;line-height:1.2}
+h3{font-size:18px}
+p{margin:8px 0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.brand{font-family:var(--f-display);font-weight:700;color:var(--brand);font-size:15px}
+.save{font-size:13px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 2px 12px rgba(29,43,54,.06)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.btn{appearance:none;border:2px solid transparent;background:var(--brand);color:#fff;font:700 17px var(--f-body);padding:12px 20px;border-radius:14px;cursor:pointer;min-height:50px}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:var(--card);color:var(--fg);border-color:var(--line)}
+.btn.c{background:var(--c)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.btn:focus-visible,.opt:focus-visible,.chipbtn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #2d7ff9;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row.end{justify-content:flex-end}
+label.lbl{font-weight:600;display:block;margin-bottom:6px}
+input[type=text],input[type=number],select{font:600 18px var(--f-body);padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--fg);min-height:48px}
+input[type=text]{width:100%;max-width:340px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--soft);color:var(--muted)}
+/* progress */
+.prog{height:12px;background:var(--soft);border-radius:999px;overflow:hidden}
+.prog>i{display:block;height:100%;background:var(--c);border-radius:999px;transition:width .3s}
+.qmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;color:var(--muted);margin:10px 0 2px}
+.tag{display:inline-block;font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--c-soft);color:var(--c)}
+.qtext{font-size:21px;font-weight:600;line-height:1.4;margin:10px 0 6px}
+.qtext .gap{display:inline-block;min-width:110px;border-bottom:3px solid var(--c);margin:0 4px;transform:translateY(-4px)}
+.opts{display:grid;gap:10px;margin-top:8px}
+.opt{appearance:none;text-align:left;border:2px solid var(--line);background:#fff;color:var(--fg);font:600 18px var(--f-body);padding:12px 16px;border-radius:14px;cursor:pointer;display:flex;gap:12px;align-items:center;min-height:54px}
+.opt b{flex:0 0 32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--soft);font-size:15px}
+.opt:hover:not(:disabled){border-color:var(--c)}
+.opt.sel{border-color:var(--c);background:var(--c-soft)}
+.opt.ok{border-color:var(--good);background:var(--good-soft)}
+.opt.no{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.tf{grid-template-columns:1fr 1fr}
+.tf .opt{justify-content:center;font-size:20px}
+.matchrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.matchrow select{width:100%}
+.matchrow .k{font-weight:700;font-size:18px}
+.matchrow.ok select{border-color:var(--good);background:var(--good-soft)}
+.matchrow.no select{border-color:var(--bad);background:var(--bad-soft)}
+.pool,.seq{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:8px;border-radius:14px}
+.pool{background:var(--soft)}
+.seq{border:2px dashed var(--c);background:#fff}
+.chipbtn{appearance:none;border:2px solid var(--c);background:#fff;color:var(--fg);font:700 17px var(--f-body);padding:8px 14px;border-radius:999px;cursor:pointer}
+.seq .chipbtn{background:var(--c-soft)}
+.seq .chipbtn span{color:var(--c);margin-right:6px}
+.seq.ok{border-color:var(--good)} .seq.no{border-color:var(--bad)}
+.hintline{font-size:14px;color:var(--muted)}
+.fb{border-radius:14px;padding:12px 14px;margin-top:12px;font-size:16px}
+.fb.ok{background:var(--good-soft);border:2px solid var(--good)}
+.fb.no{background:var(--bad-soft);border:2px solid var(--bad)}
+.fb.part{background:var(--mid-soft);border:2px solid var(--mid)}
+.fb strong{display:block;font-family:var(--f-display);font-size:18px;margin-bottom:2px}
+.fig{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:6px 0}
+.fig svg{max-width:100%;height:auto}
+.unitbox{display:flex;align-items:center;gap:10px}
+.unitbox input{width:150px}
+.unitbox span{font-weight:700;font-size:18px}
+/* results */
+.score{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ring{--p:0;width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--brand) calc(var(--p)*1%),var(--soft) 0);display:flex;align-items:center;justify-content:center;flex:none}
+.ring div{width:92px;height:92px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.ring small{font-size:12px;color:var(--muted);font-family:var(--f-body)}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center}
+.bar .name{font-weight:700}
+.bar .val{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar .track{grid-column:1/-1;height:14px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar .track i{display:block;height:100%;border-radius:999px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.b-good{background:var(--good-soft);color:var(--good)} .b-mid{background:var(--mid-soft);color:#9a6200} .b-bad{background:var(--bad-soft);color:var(--bad)}
+.mis{display:flex;flex-direction:column;gap:10px}
+.mis .m{border-radius:14px;padding:12px 14px;background:var(--soft);border-left:6px solid var(--c)}
+.mis .m .no{color:var(--bad);font-weight:700}
+.mis .m .yes{color:var(--good);font-weight:700}
+.theory{background:var(--c-soft);border:2px solid var(--c);border-radius:16px;padding:14px 16px}
+.theory h3{color:var(--c)}
+.theory ul{margin:8px 0 0;padding-left:20px}.theory li{margin:4px 0}
+details{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:10px 14px}
+summary{cursor:pointer;font-weight:700}
+table.hist{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+table.hist th,table.hist td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.hist th{color:var(--muted);font-weight:600}
+.tw{overflow-x:auto}
+.review{display:flex;flex-direction:column;gap:8px}
+.review .r{font-size:15px;border-bottom:1px dashed var(--line);padding:6px 0}
+.review .r em{font-style:normal;color:var(--bad);font-weight:700}
+.review .r b{color:var(--good)}
+.cmp{display:flex;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+.toast{font-size:14px;color:var(--good);font-weight:700}
+@media (max-width:480px){ h1{font-size:25px} .qtext{font-size:19px} .card{padding:16px} .matchrow{grid-template-columns:1fr} .tf{grid-template-columns:1fr 1fr} }
+@media (prefers-reduced-motion:reduce){ .prog>i{transition:none} }
+</style>
+<style>
+/* ---- v3: learning profile ---- */
+.conf{margin-top:14px;padding:10px 12px;border-radius:14px;background:var(--soft)}
+.conf p{margin:0 0 8px;font-weight:700}
+.conf .cb{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.conf button{appearance:none;border:2px solid var(--line);background:#fff;color:var(--fg);font:700 15px var(--f-body);padding:8px 6px;border-radius:12px;cursor:pointer;min-height:48px}
+.conf button span{display:block;font-size:22px;line-height:1.1}
+.conf button.sel{border-color:var(--c);background:var(--c-soft)}
+.conf button:disabled{cursor:default}
+.fmt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fmt button{appearance:none;border:2px solid var(--c);background:#fff;color:var(--fg);font:700 16px var(--f-body);padding:14px 10px;border-radius:16px;cursor:pointer;text-align:center;min-height:110px}
+.fmt button span{display:block;font-size:34px;margin-bottom:4px}
+.fmt button:hover{background:var(--c-soft)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{appearance:none;border:2px solid var(--c);background:#fff;color:var(--fg);font:700 14px var(--f-body);padding:6px 12px;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--c);color:#fff}
+.theory p{margin:6px 0}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.box4{border-radius:14px;padding:10px 12px;border:2px solid var(--line);background:#fff;min-width:0}
+.box4 .n{font-family:var(--f-display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.box4 .t{font-weight:700}
+.box4 .d{font-size:13px;color:var(--muted)}
+.box4.g{border-color:var(--good)} .box4.y{border-color:var(--mid)} .box4.r{border-color:var(--bad)} .box4.e{border-color:#8a99a6}
+.box4 ul{margin:6px 0 0;padding-left:18px;font-size:13px}
+.recs{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.recs li{background:var(--soft);border-radius:12px;padding:10px 12px;border-left:5px solid #2d7ff9}
+.recs li b{display:block}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;font-size:15px}
+.kv span:nth-child(2n){font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.note2{font-size:13px;color:var(--muted)}
+.pcard h3{margin-top:4px}
+@media (max-width:480px){ .fmt{grid-template-columns:1fr} .fmt button{min-height:auto;display:flex;align-items:center;gap:12px;text-align:left} .fmt button span{margin:0;font-size:28px} .grid4{grid-template-columns:1fr} }
+.mode2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mode2 button{appearance:none;border:3px solid var(--line);background:#fff;color:var(--fg);font:700 17px var(--f-body);padding:14px;border-radius:16px;cursor:pointer;text-align:left}
+.mode2 button span{display:block;font-size:30px}
+.mode2 button small{display:block;font-weight:500;font-size:14px;color:var(--muted);margin-top:4px}
+.mode2 button.sel{border-color:#ff6b4a;background:#ffe7e0}
+.agrid{display:grid;gap:3px;margin:10px auto 14px;width:100%}
+.agrid i{display:flex;align-items:center;justify-content:center;aspect-ratio:1;border:2px solid #1d2b36;border-radius:5px;font:700 16px var(--f-display);font-style:normal;background:#fff;min-width:0}
+.agrid i.k{background:var(--c-soft);border-color:var(--c)}
+.agrid i.e{border:0;background:none}
+.agrid b{display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}
+.acrow{display:grid;gap:4px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.acrow input.ok{border-color:var(--good);background:var(--good-soft)} .acrow input.no{border-color:var(--bad);background:var(--bad-soft)}
+textarea.def{width:100%;min-height:110px;font:600 18px var(--f-body);padding:10px 12px;border:2px solid var(--line);border-radius:12px;color:var(--fg)}
+.keys{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.keys span{font-size:14px;font-weight:700;padding:3px 10px;border-radius:999px}
+.keys .y{background:var(--good-soft);color:var(--good)} .keys .n{background:var(--bad-soft);color:var(--bad)}
+.cz{font-size:19px;line-height:2.3}
+.cz select{min-height:40px;font-size:16px;padding:4px 8px;margin:2px;max-width:100%}
+.cz select.ok{border-color:var(--good);background:var(--good-soft)} .cz select.no{border-color:var(--bad);background:var(--bad-soft)}
+table.mini{border-collapse:collapse;font-size:15px}
+table.mini td,table.mini th{border:1px solid var(--line);padding:5px 12px;text-align:left}
+table.mini th{background:var(--soft)}
+@media (max-width:480px){ .mode2{grid-template-columns:1fr} .agrid i{font-size:13px} }
+.paper{background:#fff;color:#111;padding:18px;border:1px solid var(--line);border-radius:12px;font-size:15px}
+.phead{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:6px}
+.psec{margin:16px 0 6px;padding:4px 10px;border:2px solid #111;border-radius:6px;font-size:15px}
+.pq{margin:8px 0 12px;break-inside:avoid}
+.pq .fig{transform:scale(.85);transform-origin:left top;margin-bottom:-20px}
+.tfq{display:flex;justify-content:space-between;gap:12px}.tfq .sl{white-space:nowrap;font-weight:700}
+.popts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 14px;margin-top:4px}
+.pl{display:inline-block;border-bottom:1.3px solid #111;height:1em;vertical-align:baseline}
+.plines i{display:block;border-bottom:1.2px solid #999;height:26px}
+.pbank{border:1.5px dashed #555;border-radius:6px;padding:4px 8px;margin:4px 0;text-align:center}
+.pclues{margin:4px 0;padding-left:20px;font-size:14px}
+.paper .agrid{margin:6px 0;max-width:420px}.paper .agrid i{border-width:1.5px;background:#fff}.paper .agrid i.k{background:#ddd;border-width:2.5px;border-color:#111}
+.pans{break-before:page;margin-top:24px;font-size:13px}.pans li{margin:2px 0}
+@media print{ body{background:#fff!important} .top,#parent,.noprint{display:none!important} .wrap{max-width:none;padding:0} .paper{border:0;padding:0} @page{margin:14mm} }
+.hist2 .hrow{display:grid;grid-template-columns:auto minmax(0,1fr) 3.2em;gap:10px;align-items:center;padding:5px 6px;border-radius:10px}
+.hist2 .hrow.now{background:#fff6d6}
+.hist2 .hd{font-size:13px;color:var(--muted);white-space:nowrap}
+.hist2 .htr{height:14px;border-radius:999px;background:var(--soft);overflow:hidden}.hist2 .htr i{display:block;height:100%;border-radius:999px}
+.hist2 .hp{text-align:right;font-variant-numeric:tabular-nums}
+.hbig{font-size:18px;margin:0}
+</style>
+
+<div class="wrap">
+  <div class="top"><span class="brand">Φυσικά Ε΄ · Υλικά σώματα</span><span class="save" id="savestate"></span></div>
+  <div id="view"></div>
+  <div id="parent" style="margin-top:16px"></div>
+</div>
+
+<script>
+(function(){
+/* ======================= ΕΝΟΤΗΤΕΣ, ΤΡΟΠΟΙ, ΜΟΡΦΕΣ ======================= */
+const CONCEPTS = {
+  domi:       {name:'Μόρια και άτομα',        col:'#7a5cff', soft:'#ece7ff'},
+  enoseis:    {name:'Στοιχεία και ενώσεις',   col:'#0f9d8f', soft:'#dcf5f1'},
+  katastaseis:{name:'Στερεά, υγρά, αέρια',    col:'#2d7ff9', soft:'#e2edff'},
+  ogkos:      {name:'Όγκος',                  col:'#e8590c', soft:'#ffeadb'},
+  maza:       {name:'Μάζα',                   col:'#d6336c', soft:'#fde4ec'},
+  pyknotita:  {name:'Πυκνότητα',              col:'#2b9348', soft:'#e1f5e6'},
+  monades:    {name:'Μονάδες και μετατροπές', col:'#b26b00', soft:'#fff0d6'}
+};
+/* how the question asks her to think */
+const MODES = {
+  vivlio:{name:'Θυμάμαι το βιβλίο',     icon:'📖', desc:'ορισμοί, λέξεις, γεγονότα'},
+  eikona:{name:'Διαβάζω εικόνες',       icon:'🖼️', desc:'σχήματα, σωλήνας, ζυγός, μόρια'},
+  praxi: {name:'Αριθμοί και πράξεις',   icon:'🔢', desc:'αφαιρέσεις, αθροίσματα, μετατροπές'},
+  skepsi:{name:'Σκέψη και παραδείγματα',icon:'💭', desc:'εφαρμογή στη ζωή, «γιατί»'}
+};
+/* how she has to answer */
+const TYPES = {
+  anag:{name:'Διαλέγει από επιλογές', types:['mcq','tf','cloze']},
+  anak:{name:'Γράφει μόνη της τη λέξη', types:['fill','acro']},
+  orism:{name:'Γράφει ορισμό με δικά της λόγια', types:['def']},
+  synd:{name:'Συνδέει / βάζει σε σειρά', types:['match','order']},
+  arith:{name:'Γράφει αριθμό', types:['num']}
+};
+/* explanation formats offered in reinforcement */
+const FORMATS = {
+  eikona:{name:'Με εικόνα', icon:'🖼️'},
+  zoi:   {name:'Με παράδειγμα από τη ζωή', icon:'🍎'},
+  vivlio:{name:'Όπως το λέει το βιβλίο', icon:'📖'}
+};
+const CONF = [{v:0,icon:'🤔',name:'Μαντεύω'},{v:1,icon:'🙂',name:'Νομίζω'},{v:2,icon:'😎',name:'Σίγουρη'}];
+
+/* ======================= ΣΧΗΜΑΤΑ (SVG) ======================= */
+const F='font-family="Commissioner,sans-serif"';
+function cyl(level, stone, cap){
+  const H=180, top=12, y=v=>top+H-(v/100)*H;
+  let ticks=''; for(let v=10;v<=100;v+=10){ const yy=y(v); ticks+=`<line x1="66" y1="${yy}" x2="${v%20?72:78}" y2="${yy}" stroke="#1d2b36" stroke-width="1.5"/>`+(v%20?'':`<text x="82" y="${yy+4}" font-size="11" ${F} fill="#1d2b36">${v}</text>`); }
+  return `<svg width="120" height="230" viewBox="0 0 120 230" role="img" aria-label="${cap}">
+    <rect x="22" y="${y(level)}" width="44" height="${top+H-y(level)}" fill="#8fd0f5"/>
+    <line x1="22" y1="${y(level)}" x2="66" y2="${y(level)}" stroke="#1767a8" stroke-width="2.5"/>
+    ${stone?`<ellipse cx="44" cy="${top+H-12}" rx="15" ry="10" fill="#7d8790" stroke="#1d2b36" stroke-width="1.5"/>`:''}
+    <path d="M22 ${top} V${top+H} H66 V${top}" fill="none" stroke="#1d2b36" stroke-width="2.5"/>${ticks}
+    <text x="44" y="${top+H+30}" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">${cap}</text></svg>`;
+}
+function cylPair(a,b){ return `<div class="fig">${cyl(a,false,'Α. πριν')}${cyl(b,true,'Β. με την πέτρα')}</div><p class="hintline" style="text-align:center">Οι αριθμοί είναι ml. Κάθε γραμμή = 10 ml, μισή γραμμή = 5 ml.</p>`; }
+function balance(obj, weights){
+  let x=176, ws='';
+  weights.forEach(w=>{ const r=Math.round(9+Math.cbrt(w)*2.2); ws+=`<rect x="${x}" y="${78-r*1.4}" width="${r*1.4}" height="${r*1.4}" rx="3" fill="#f2c14e" stroke="#1d2b36"/><text x="${x+r*.7}" y="${78-r*.7+4}" text-anchor="middle" font-size="11" font-weight="700" ${F} fill="#1d2b36">${w}</text>`; x+=r*1.4+6; });
+  return `<div class="fig"><svg width="320" height="170" viewBox="0 0 320 170" role="img" aria-label="Ζυγός σε ισορροπία">
+    <polygon points="160,40 146,150 174,150" fill="#c9d6de" stroke="#1d2b36"/><rect x="110" y="150" width="100" height="10" rx="3" fill="#8aa1ad"/>
+    <line x1="40" y1="40" x2="280" y2="40" stroke="#1d2b36" stroke-width="5" stroke-linecap="round"/><circle cx="160" cy="40" r="5" fill="#1d2b36"/>
+    <line x1="40" y1="40" x2="40" y2="80" stroke="#1d2b36"/><line x1="280" y1="40" x2="280" y2="80" stroke="#1d2b36"/>
+    <path d="M5 80 Q40 100 75 80 Z" fill="#dfe8ee" stroke="#1d2b36"/><path d="M145 80 Q210 102 295 80 Z" fill="#dfe8ee" stroke="#1d2b36"/>
+    <circle cx="40" cy="64" r="15" fill="#c7d94a" stroke="#1d2b36"/><text x="40" y="118" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">${obj}</text>
+    <g transform="translate(-14,0)">${ws}</g><text x="210" y="118" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">σταθμά (σε g)</text>
+    <text x="160" y="22" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#1f9e5a">ισορροπεί</text></svg></div>`;
+}
+function tiltBalance(){
+  // left pan lower
+  return `<div class="fig"><svg width="300" height="170" viewBox="0 0 300 170" role="img" aria-label="Ζυγός που γέρνει προς τα αριστερά">
+    <polygon points="150,40 136,150 164,150" fill="#c9d6de" stroke="#1d2b36"/><rect x="100" y="150" width="100" height="10" rx="3" fill="#8aa1ad"/>
+    <line x1="40" y1="62" x2="260" y2="18" stroke="#1d2b36" stroke-width="5" stroke-linecap="round"/><circle cx="150" cy="40" r="5" fill="#1d2b36"/>
+    <line x1="40" y1="62" x2="40" y2="100" stroke="#1d2b36"/><line x1="260" y1="18" x2="260" y2="56" stroke="#1d2b36"/>
+    <path d="M5 100 Q40 120 75 100 Z" fill="#dfe8ee" stroke="#1d2b36"/><path d="M225 56 Q260 76 295 56 Z" fill="#dfe8ee" stroke="#1d2b36"/>
+    <rect x="26" y="74" width="28" height="26" rx="4" fill="#b8c2ff" stroke="#1d2b36"/><text x="40" y="92" text-anchor="middle" font-size="14" font-weight="700" ${F} fill="#1d2b36">Α</text>
+    <rect x="246" y="30" width="28" height="26" rx="4" fill="#ffd0a8" stroke="#1d2b36"/><text x="260" y="48" text-anchor="middle" font-size="14" font-weight="700" ${F} fill="#1d2b36">Β</text></svg></div>`;
+}
+function atomSvg(labels){
+  // nucleus with p (red) / n (grey), electrons blue on two orbits
+  let nuc=''; const pts=[[0,0],[9,3],[-8,4],[3,-9],[-4,-7],[8,-6],[-9,-3],[2,9]];
+  pts.forEach((p,i)=>{ nuc+=`<circle cx="${110+p[0]}" cy="${100+p[1]}" r="7" fill="${i%2?'#9aa4ab':'#e5484d'}" stroke="#1d2b36" stroke-width=".8"/>`; });
+  const el=[[110+45,100],[110-45,100],[110,100-75],[110+65,100+40],[110-65,100+40],[110,100+75]];
+  let e=el.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#2d8cff" stroke="#1d2b36" stroke-width=".8"/>`).join('');
+  const lab = labels ? `<text x="110" y="132" text-anchor="middle" font-size="16" font-weight="700" ${F} fill="#1d2b36">Α</text><line x1="160" y1="96" x2="186" y2="70" stroke="#1d2b36"/><text x="192" y="68" font-size="16" font-weight="700" ${F} fill="#1d2b36">Β</text>`
+    : `<text x="110" y="134" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#1d2b36">πυρήνας</text><text x="196" y="66" font-size="12" font-weight="700" ${F} fill="#2d8cff">ηλεκτρόνια</text><line x1="160" y1="96" x2="190" y2="70" stroke="#2d8cff"/>`;
+  return `<svg width="270" height="200" viewBox="0 0 270 200" role="img" aria-label="Άτομο">
+    <circle cx="110" cy="100" r="45" fill="none" stroke="#8aa1ad" stroke-dasharray="3 3"/><ellipse cx="110" cy="100" rx="75" ry="75" fill="none" stroke="#8aa1ad" stroke-dasharray="3 3"/>${nuc}${e}${lab}</svg>`;
+}
+const ATOMC={O:'#e5484d',H:'#ffffff',C:'#4a5560',N:'#4f7cff',Au:'#e7b628'};
+function molSvg(parts, cap, w){
+  // parts: [[el,x,y,r]]
+  const W=w||120; let s=''; parts.forEach((p,i)=>{ if(i>0){ s+=`<line x1="${parts[0][1]}" y1="${parts[0][2]}" x2="${p[1]}" y2="${p[2]}" stroke="#1d2b36" stroke-width="4"/>`; } });
+  parts.forEach(p=>{ s+=`<circle cx="${p[1]}" cy="${p[2]}" r="${p[3]}" fill="${ATOMC[p[0]]}" stroke="#1d2b36" stroke-width="1.5"/><text x="${p[1]}" y="${p[2]+5}" text-anchor="middle" font-size="${p[3]>14?14:11}" font-weight="700" ${F} fill="${p[0]==='C'||p[0]==='O'||p[0]==='N'?'#fff':'#1d2b36'}">${p[0]}</text>`; });
+  return `<svg width="${W}" height="${cap?120:100}" viewBox="0 0 ${W} ${cap?120:100}" role="img" aria-label="${cap||'μόριο'}">${s}${cap?`<text x="${W/2}" y="114" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">${cap}</text>`:''}</svg>`;
+}
+const MOL = {
+  H2O:(cap)=>molSvg([['O',60,52,20],['H',30,76,12],['H',90,76,12]],cap),
+  O2:(cap)=>molSvg([['O',42,50,20],['O',78,50,20]],cap),
+  CO2:(cap)=>molSvg([['C',70,50,18],['O',28,50,20],['O',112,50,20]],cap,140),
+  Au:(cap)=>{ let s=''; for(let r=0;r<3;r++)for(let c=0;c<4;c++){ s+=`<circle cx="${22+c*26+(r%2)*13}" cy="${26+r*22}" r="12" fill="#e7b628" stroke="#1d2b36" stroke-width="1.2"/>`; } return `<svg width="130" height="${cap?120:100}" viewBox="0 0 130 ${cap?120:100}" role="img" aria-label="${cap}">${s}${cap?`<text x="65" y="114" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">${cap}</text>`:''}</svg>`; }
+};
+function statesSvg(order, letters){
+  // order: array of 'solid'|'liquid'|'gas'; draws boxes with molecules
+  const box=(kind,x,lab)=>{
+    let d='';
+    if(kind==='solid'){ for(let r=0;r<4;r++)for(let c=0;c<4;c++) d+=`<circle cx="${x+20+c*18}" cy="${60+r*18}" r="7.5" fill="#2d8cff" stroke="#1d2b36" stroke-width=".8"/>`; }
+    if(kind==='liquid'){ const P=[[18,104],[34,106],[52,104],[70,105],[88,104],[24,90],[42,88],[60,91],[80,89],[30,74],[50,76],[70,74],[88,88],[40,62],[62,62],[86,74]]; P.forEach(p=>d+=`<circle cx="${x+p[0]}" cy="${p[1]}" r="7.5" fill="#2d8cff" stroke="#1d2b36" stroke-width=".8"/>`); }
+    if(kind==='gas'){ const P=[[18,30],[78,22],[48,58],[90,70],[22,96],[66,104],[40,18],[94,40]]; P.forEach(p=>d+=`<circle cx="${x+p[0]}" cy="${p[1]}" r="7.5" fill="#2d8cff" stroke="#1d2b36" stroke-width=".8"/><path d="M${x+p[0]+9} ${p[1]-3} l10 -6" stroke="#8aa1ad" stroke-width="1.5"/>`); }
+    return `<rect x="${x}" y="8" width="106" height="108" rx="6" fill="#fff" stroke="#1d2b36" stroke-width="2"/>${d}<text x="${x+53}" y="138" text-anchor="middle" font-size="15" font-weight="700" ${F} fill="#1d2b36">${lab}</text>`;
+  };
+  const names={solid:'στερεό',liquid:'υγρό',gas:'αέριο'};
+  return `<div class="fig"><svg width="370" height="146" viewBox="0 0 370 146" role="img" aria-label="Τρία κουτιά με μόρια">${order.map((k,i)=>box(k,4+i*124,letters?letters[i]:names[k])).join('')}</svg></div>`;
+}
+function densitySvg(letters){
+  const box=(x,n,lab,sub)=>{ let d=''; const cols=n>20?6:3, rows=n>20?6:2, gap=n>20?14:30; for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) d+=`<circle cx="${x+18+c*gap}" cy="${30+r*(n>20?14:36)}" r="${n>20?5:5}" fill="#1d2b36"/>`;
+    return `<rect x="${x}" y="10" width="100" height="100" rx="4" fill="#fff" stroke="#1d2b36" stroke-width="2"/>${d}<text x="${x+50}" y="132" text-anchor="middle" font-size="15" font-weight="700" ${F} fill="#1d2b36">${lab}</text>${sub?`<text x="${x+50}" y="150" text-anchor="middle" font-size="12" ${F} fill="#5a6d7a">${sub}</text>`:''}`; };
+  return `<div class="fig"><svg width="270" height="160" viewBox="0 0 270 160" role="img" aria-label="Δύο κύβοι ίδιου όγκου">${box(10,36,letters?'Α':'χρυσός',letters?'':'πολλή μάζα')}${box(160,6,letters?'Β':'φελλός',letters?'':'λίγη μάζα')}</svg></div>`;
+}
+function ladderSvg(){
+  const row=(y,big,small)=>`<rect x="10" y="${y}" width="70" height="34" rx="8" fill="#fff0d6" stroke="#b26b00" stroke-width="2"/><text x="45" y="${y+23}" text-anchor="middle" font-size="16" font-weight="700" ${F} fill="#1d2b36">${big}</text>
+    <rect x="230" y="${y}" width="70" height="34" rx="8" fill="#fff" stroke="#b26b00" stroke-width="2"/><text x="265" y="${y+23}" text-anchor="middle" font-size="16" font-weight="700" ${F} fill="#1d2b36">${small}</text>
+    <path d="M86 ${y+11} H222" stroke="#1f9e5a" stroke-width="2.5" marker-end="url(#ag)"/><text x="154" y="${y+7}" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#1f9e5a">× 1000</text>
+    <path d="M224 ${y+25} H88" stroke="#d93a2b" stroke-width="2.5" marker-end="url(#ar)"/><text x="154" y="${y+40}" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#d93a2b">÷ 1000</text>`;
+  return `<div class="fig"><svg width="310" height="200" viewBox="0 0 310 200" role="img" aria-label="Μετατροπές μονάδων">
+    <defs><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#1f9e5a"/></marker><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#d93a2b"/></marker></defs>
+    ${row(6,'1 l','1000 ml')}${row(72,'1 kg','1000 g')}${row(138,'1 t','1000 kg')}</svg></div>`;
+}
+function zoomSvg(){
+  const cell=(x,inner,lab)=>`<rect x="${x}" y="6" width="74" height="74" rx="8" fill="#fff" stroke="#7a5cff" stroke-width="2"/>${inner}<text x="${x+37}" y="98" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">${lab}</text>`;
+  let mol=''; for(let r=0;r<4;r++)for(let c=0;c<4;c++) mol+=`<circle cx="${100+12+c*16}" cy="${18+r*16}" r="6" fill="#fff6e0" stroke="#1d2b36" stroke-width=".8"/>`;
+  const atom=`<circle cx="${190+37}" cy="43" r="9" fill="#e5484d" stroke="#1d2b36"/><circle cx="${190+37}" cy="43" r="26" fill="none" stroke="#8aa1ad" stroke-dasharray="3 3"/><circle cx="${190+63}" cy="43" r="5" fill="#2d8cff"/><circle cx="${190+11}" cy="43" r="5" fill="#2d8cff"/>`;
+  const qk=`<circle cx="${280+37}" cy="43" r="26" fill="#ffd6d6" stroke="#e5484d"/><circle cx="${280+27}" cy="36" r="7" fill="#f3b43f"/><circle cx="${280+47}" cy="36" r="7" fill="#f3b43f"/><circle cx="${280+37}" cy="54" r="7" fill="#2d8cff"/>`;
+  const arrow=x=>`<text x="${x}" y="48" text-anchor="middle" font-size="18" font-weight="700" ${F} fill="#7a5cff">→</text>`;
+  return `<div class="fig"><svg width="360" height="106" viewBox="0 0 360 106" role="img" aria-label="Από το σώμα στο κουάρκ">
+    ${cell(4,`<rect x="22" y="24" width="38" height="38" rx="3" fill="#fff6e0" stroke="#1d2b36"/>`,'σώμα')}${arrow(90)}${cell(96,mol,'μόρια')}${arrow(180)}${cell(186,atom,'άτομο')}${arrow(270)}${cell(276,qk,'κουάρκ')}</svg></div>`;
+}
+
+/* ======================= ΘΕΩΡΙΑ ΣΕ 3 ΜΟΡΦΕΣ ======================= */
+const TH = {
+ domi:{
+  eikona:()=>zoomSvg()+atomSvg(false)+`<p>Κάνουμε <b>ζουμ</b>: σώμα → μόρια → άτομο → κουάρκ. Στη μέση του ατόμου είναι ο <b>πυρήνας</b> (κόκκινα πρωτόνια, γκρι νετρόνια). <b>Γύρω</b> του τα μπλε <b>ηλεκτρόνια</b>.</p>`,
+  zoi:()=>`<p>🍫 Κόβεις μια σοκολάτα σε όλο και πιο μικρά κομματάκια. Όσο μικρό κι αν είναι, είναι ακόμα σοκολάτα. Το πιο μικρό κομματάκι που είναι ακόμα σοκολάτα είναι το <b>μόριο</b>. Γι' αυτό το μόριο της ζάχαρης είναι γλυκό!</p><p>🧱 Τα μόρια είναι φτιαγμένα από <b>άτομα</b>, όπως ένα σπίτι από LEGO είναι φτιαγμένο από τουβλάκια.</p><p>☀️ Το άτομο μοιάζει λίγο με τον Ήλιο και τους πλανήτες: στη μέση ο <b>πυρήνας</b>, και γύρω-γύρω κινούνται τα <b>ηλεκτρόνια</b>.</p><p>✂️ Ο Δημόκριτος νόμιζε ότι το άτομο δεν κόβεται («ά-τομο»). Όμως κόβεται: μέσα στα πρωτόνια και στα νετρόνια υπάρχουν <b>κουάρκ</b>.</p>`,
+  vivlio:()=>`<p><b>Μόριο</b> είναι το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του.</p><p>Τα μόρια αποτελούνται από ακόμη μικρότερα σωματίδια, τα <b>άτομα</b>.</p><p>Το άτομο έχει στο κέντρο τον <b>πυρήνα</b>, που αποτελείται από <b>πρωτόνια</b> και <b>νετρόνια</b>. Γύρω από τον πυρήνα κινούνται τα <b>ηλεκτρόνια</b>.</p><p>Τα πρωτόνια και τα νετρόνια αποτελούνται από <b>κουάρκ</b>. Ο <b>Δημόκριτος</b> (5ος αι. π.Χ.) ονόμασε το άτομο έτσι από το «α» + «τέμνω»: αυτό που δεν κόβεται.</p>`
+ },
+ enoseis:{
+  eikona:()=>`<div class="fig">${MOL.O2('O₂ · στοιχείο')}${MOL.Au('Au · στοιχείο')}</div><div class="fig">${MOL.H2O('H₂O · ένωση')}${MOL.CO2('CO₂ · ένωση')}</div><p>Πάνω: <b>ένα χρώμα</b> μπαλίτσας = ένα είδος ατόμων = <b>στοιχείο</b>. Κάτω: <b>διαφορετικά χρώματα</b> = διαφορετικά άτομα = <b>χημική ένωση</b>.</p>`,
+  zoi:()=>`<p>📿 Σκέψου ένα βραχιόλι με χάντρες. Αν όλες οι χάντρες είναι κόκκινες, μοιάζει με <b>στοιχείο</b> (ένα είδος). Αν έχει κόκκινες και άσπρες, μοιάζει με <b>χημική ένωση</b> (διαφορετικά είδη).</p><p>💧 Το νερό H₂O είναι σαν βραχιόλι με <b>2 άσπρες</b> χάντρες (H) και <b>1 κόκκινη</b> (O). Το μικρό αριθμάκι μάς λέει πόσες χάντρες από κάθε είδος υπάρχουν.</p><p>🔤 Όπως όλες οι λέξεις φτιάχνονται από 24 γράμματα, έτσι όλα τα υλικά φτιάχνονται από <b>92 στοιχεία</b>.</p>`,
+  vivlio:()=>`<p>Τα καθαρά σώματα χωρίζονται σε <b>στοιχεία</b>, στα οποία τα μόρια αποτελούνται από <b>ένα είδος ατόμων</b> (οξυγόνο O, χρυσός Au), και σε <b>χημικές ενώσεις</b>, στις οποίες τα μόρια αποτελούνται από <b>διαφορετικά άτομα</b> (νερό H₂O, διοξείδιο του άνθρακα CO₂, αμμωνία NH₃).</p><p>Στον χημικό τύπο ο αριθμός δείχνει πόσα άτομα κάθε είδους έχει το μόριο: H₂O = 2 άτομα υδρογόνου και 1 άτομο οξυγόνου.</p>`
+ },
+ katastaseis:{
+  eikona:()=>statesSvg(['solid','liquid','gas'])+`<p><b>Στερεό</b>: μόρια σε σειρές, πολύ κοντά. <b>Υγρό</b>: κοντά, αλλά ανακατεμένα, παίρνουν το σχήμα του δοχείου. <b>Αέριο</b>: λίγα και μακριά, τρέχουν παντού. Σε όλα τα μόρια έχουν <b>ίδιο μέγεθος</b>!</p>`,
+  zoi:()=>`<p>🏫 <b>Στερεό</b> = μαθητές καθισμένοι στα θρανία: κουνιούνται, αλλά μένουν στη θέση τους.<br>🚶 <b>Υγρό</b> = μαθητές στον διάδρομο: αλλάζουν θέσεις, αλλά είναι κοντά.<br>⚽ <b>Αέριο</b> = μαθητές στην αυλή στο διάλειμμα: τρέχουν παντού!</p><p>🧃 Αδειάζεις χυμό από ποτήρι σε πιάτο: αλλάζει <b>σχήμα</b>, αλλά είναι ο ίδιος χυμός, ίδιος <b>όγκος</b>.</p><p>🎈 Πατάς ένα μπαλόνι και ζουλιέται: ο αέρας <b>συμπιέζεται</b>, γιατί τα μόριά του είναι μακριά και μπορούν να πλησιάσουν. Ένα μπουκάλι γεμάτο νερό δεν ζουλιέται.</p>`,
+  vivlio:()=>`<p>Τα μόρια όλων των σωμάτων κινούνται συνεχώς.</p><p><b>Στερεά</b>: σταθερό σχήμα και όγκος. Τα μόρια κινούνται πολύ κοντά το ένα στο άλλο, γύρω από σταθερές θέσεις.</p><p><b>Υγρά</b>: σταθερός όγκος, παίρνουν το σχήμα του δοχείου. Τα μόρια αλλάζουν θέσεις, αλλά παραμένουν κοντά.</p><p><b>Αέρια</b>: αλλάζει σχήμα και όγκος. Τα μόρια κινούνται ελεύθερα και απομακρύνονται όσο μπορούν.</p>`
+ },
+ ogkos:{
+  eikona:()=>`<div class="fig">${cyl(50,false,'πριν: 50 ml')}${cyl(70,true,'μετά: 70 ml')}</div><p style="text-align:center;font-size:20px"><b>70 − 50 = 20 cm³</b></p><p>Το νερό ανέβηκε όσο χώρο πιάνει η πέτρα. <b>Τελική − αρχική = όγκος της πέτρας.</b></p>`,
+  zoi:()=>`<p>🛁 Όταν μπαίνεις στη μπανιέρα, το νερό <b>ανεβαίνει</b>! Γιατί; Γιατί το σώμα σου πιάνει χώρο μέσα στο νερό. Αυτός ο χώρος είναι ο <b>όγκος</b> σου.</p><p>🪨 Το ίδιο κάνει η πέτρα στον σωλήνα. Αν το νερό πήγε από 50 σε 70, η πέτρα «έσπρωξε» 20 ml νερό. Άρα έχει όγκο 20 cm³.</p><p>⛽ Η αντλία της βενζίνης μετράει πόσα <b>λίτρα</b> μπαίνουν στο αυτοκίνητο: μετράει <b>όγκο</b>.</p>`,
+  vivlio:()=>`<p><b>Όγκος</b> ενός σώματος είναι ο χώρος που αυτό καταλαμβάνει. Μονάδα είναι το κυβικό μέτρο (m³). Χρησιμοποιούμε επίσης το λίτρο (l) και το κυβικό εκατοστό (cm³ ή ml).</p><p>Τον όγκο ενός στερεού με ακανόνιστο σχήμα τον βρίσκουμε βυθίζοντάς το σε ογκομετρικό σωλήνα με νερό: η διαφορά της τελικής από την αρχική ένδειξη είναι ο όγκος του σώματος.</p>`
+ },
+ maza:{
+  eikona:()=>balance('μήλο',[100,50,5])+`<p style="text-align:center;font-size:20px"><b>100 + 50 + 5 = 155 g</b></p><p>Ο ζυγός είναι <b>ίσιος</b> (ισορροπεί), άρα το μήλο έχει την ίδια μάζα με όλα τα σταθμά μαζί.</p>`+tiltBalance()+`<p>Εδώ ο ζυγός <b>γέρνει</b> προς το Α: το Α έχει <b>μεγαλύτερη μάζα</b>.</p>`,
+  zoi:()=>`<p>⚖️ Θυμάσαι την <b>τραμπάλα</b>; Γέρνει προς το παιδί που έχει περισσότερη μάζα. Όταν τα δύο παιδιά έχουν ίδια μάζα, μένει ίσια. Ο ζυγός σύγκρισης δουλεύει ακριβώς έτσι!</p><p>🛒 Στο σούπερ μάρκετ, στη ζάχαρη γράφει «1 kg» και στη σοκολάτα «100 g». Αυτό είναι η <b>μάζα</b> τους: πόση ύλη έχουν.</p><p>🌙 Στη Σελήνη πηδάς πιο ψηλά, αλλά είσαι φτιαγμένη από την ίδια ύλη. Η <b>μάζα σου δεν αλλάζει</b>.</p>`,
+  vivlio:()=>`<p>Η <b>μάζα</b> ενός σώματος εκφράζει το ποσό της ύλης από το οποίο αυτό αποτελείται. Μονάδα είναι το χιλιόγραμμο ή κιλό (kg). 1 kg = 1000 g, 1 t = 1000 kg.</p><p>Τη μάζα τη μετράμε με τον <b>ζυγό σύγκρισης</b>, συγκρίνοντάς τη με σώματα γνωστής μάζας, τα <b>σταθμά</b>.</p><p>Η μάζα είναι χαρακτηριστική ιδιότητα του σώματος και δεν αλλάζει όπου κι αν βρίσκεται.</p>`
+ },
+ pyknotita:{
+  eikona:()=>densitySvg(false)+`<p>Δύο κύβοι με <b>ίδιο όγκο</b>. Στον χρυσό η ύλη είναι πολύ «στριμωγμένη» (πολλές τελείες), στον φελλό «αραιή». Ο χρυσός έχει <b>μεγαλύτερη πυκνότητα</b>, άρα και περισσότερη μάζα.</p>`,
+  zoi:()=>`<p>🪣 Δύο ίδιοι κουβάδες: ο ένας με <b>άμμο</b>, ο άλλος με <b>ποπ κορν</b>. Ίδιος όγκος, αλλά ο κουβάς με την άμμο έχει πολύ περισσότερη μάζα. Η άμμος έχει μεγαλύτερη <b>πυκνότητα</b>.</p><p>🛗 Ένα ασανσέρ γεμάτο κόσμο στριμωγμένο είναι «πυκνό». Το ίδιο ασανσέρ με 2 ανθρώπους είναι «αραιό».</p><p>☁️ 1 kg βαμβάκι και 1 kg σίδερο έχουν <b>ίδια μάζα</b>! Απλώς το βαμβάκι θέλει μια τεράστια σακούλα, ενώ το σίδερο χωράει στη χούφτα σου.</p>`,
+  vivlio:()=>`<p>Η <b>πυκνότητα</b> είναι μια χαρακτηριστική ιδιότητα των σωμάτων και εκφράζει την ποσότητα της μάζας στη μονάδα του όγκου. Μονάδες: g/cm³ ή kg/m³.</p><p>Για να συγκρίνουμε υλικά, παίρνουμε ίσους όγκους: 1 cm³ σιδήρου έχει μάζα 7,8 g, ενώ 1 cm³ χαρτιού 1 g.</p><p>Πυκνότητες (g/cm³): χρυσός 19,3 · σίδηρος 7,8 · νερό 1 · πάγος 0,92 · φελλός 0,24.</p>`
+ },
+ monades:{
+  eikona:()=>ladderSvg()+`<p>Από τη <b>μεγάλη</b> μονάδα στη <b>μικρή</b> (πράσινο βέλος): <b>× 1000</b>. Από τη μικρή στη μεγάλη (κόκκινο βέλος): <b>÷ 1000</b>. Και κάτι ακόμα: <b>1 ml = 1 cm³</b>.</p>`,
+  zoi:()=>`<p>🧴 Ένα μεγάλο μπουκάλι νερό γράφει <b>1,5 l</b>, δηλαδή 1500 ml. Ένα κουτάκι αναψυκτικό γράφει <b>330 ml</b>.</p><p>🍬 Ένα πακέτο ζάχαρη είναι <b>1 kg</b> = 1000 g. Μια σοκολάτα 100 g είναι το ένα δέκατο του κιλού.</p><p>🚗 Ένα αυτοκίνητο έχει περίπου <b>1 t</b> (τόνο) = 1000 kg.</p><p>👉 Κάθε φορά που πας στη μικρότερη μονάδα, ο αριθμός μεγαλώνει (× 1000).</p>`,
+  vivlio:()=>`<p><b>Όγκος</b>: κυβικό μέτρο (m³), λίτρο (l), κυβικό εκατοστό (cm³ ή ml). 1 l = 1000 cm³.</p><p><b>Μάζα</b>: χιλιόγραμμο (kg), γραμμάριο (g), τόνος (t). 1 kg = 1000 g, 1 t = 1000 kg.</p><p><b>Πυκνότητα</b>: g/cm³ ή kg/m³.</p>`
+ }
+};
+
+/* ======================= ΕΡΩΤΗΣΕΙΣ (κύριο κουίζ) =======================
+   m = τρόποι σκέψης (MODES) που ελέγχει η ερώτηση */
+const MAIN = [
+ {id:'D1',c:'domi',m:['vivlio'],t:'fill',q:'Το ___ είναι το μικρότερο τμήμα ενός υλικού που διατηρεί τις ιδιότητές του.',a:['μοριο','μορια'],show:'μόριο',mis:{'ατομο':'Μπερδεύει το μόριο με το άτομο.','ατομα':'Μπερδεύει το μόριο με το άτομο.'},ex:'Το μόριο κρατάει τις ιδιότητες του υλικού. Τα άτομα είναι τα «τουβλάκια» από τα οποία φτιάχνεται.'},
+ {id:'D2',c:'domi',m:['skepsi'],t:'mcq',q:'Η ζάχαρη είναι γλυκιά. Το μόριο της ζάχαρης είναι…',opts:['γλυκό','χωρίς γεύση','πικρό'],a:0,mis:{1:'Δεν έχει καταλάβει ότι το μόριο κρατάει τις ιδιότητες του υλικού.',2:'Δεν έχει καταλάβει ότι το μόριο κρατάει τις ιδιότητες του υλικού.'},ex:'Το μόριο κρατάει τις ιδιότητες του υλικού, άρα είναι γλυκό.'},
+ {id:'D3',c:'domi',m:['vivlio'],t:'mcq',q:'Τι υπάρχει μέσα στον πυρήνα του ατόμου;',opts:['πρωτόνια και νετρόνια','ηλεκτρόνια','μόρια'],a:0,mis:{1:'Νομίζει ότι τα ηλεκτρόνια είναι μέσα στον πυρήνα (κινούνται γύρω του).',2:'Μπερδεύει τη σειρά: τα μόρια είναι μεγαλύτερα από τα άτομα.'},ex:'Στον πυρήνα είναι τα πρωτόνια και τα νετρόνια. Τα ηλεκτρόνια κινούνται γύρω του.'},
+ {id:'D4',c:'domi',m:['vivlio'],t:'tf',q:'Ο Δημόκριτος είχε δίκιο ότι το άτομο δεν κόβεται σε μικρότερα κομμάτια.',a:false,mis:'Πιστεύει ότι το άτομο δεν χωρίζεται σε μικρότερα σωματίδια.',ex:'Είχε δίκιο ότι υπάρχουν άτομα, αλλά το άτομο κόβεται: έχει πυρήνα και ηλεκτρόνια.'},
+ {id:'D5',c:'domi',m:['skepsi'],t:'order',q:'Βάλε τα στη σειρά, από το πιο μεγάλο στο πιο μικρό.',items:['σώμα','μόριο','άτομο','κουάρκ'],mis:'Μπερδεύει τη σειρά μεγέθους: σώμα → μόριο → άτομο → κουάρκ.',ex:'Σώμα → μόριο → άτομο → κουάρκ.'},
+ {id:'D6',c:'domi',m:['eikona'],t:'mcq',q:'Κοίτα το άτομο. Τι είναι οι μπλε μπαλίτσες που δείχνει το Β;',fig:()=>`<div class="fig">${atomSvg(true)}</div>`,opts:['ηλεκτρόνια','πρωτόνια','μόρια'],a:0,mis:{1:'Δεν αναγνωρίζει στην εικόνα πού είναι τα πρωτόνια (μέσα στον πυρήνα) και πού τα ηλεκτρόνια (γύρω).',2:'Μπερδεύει τα μέρη του ατόμου με τα μόρια.'},ex:'Γύρω από τον πυρήνα (Α) κινούνται τα ηλεκτρόνια (Β).'},
+
+ {id:'E1',c:'enoseis',m:['vivlio'],t:'match',q:'Είναι στοιχείο ή χημική ένωση;',items:[['H₂O (νερό)','Χημική ένωση'],['Au (χρυσός)','Στοιχείο'],['CO₂','Χημική ένωση'],['O (οξυγόνο)','Στοιχείο'],['NH₃ (αμμωνία)','Χημική ένωση']],choices:['Στοιχείο','Χημική ένωση'],mis:'Δεν ξεχωρίζει καλά τα στοιχεία (ένα είδος ατόμων) από τις χημικές ενώσεις (διαφορετικά άτομα).',ex:'Ένα είδος ατόμου (O, Au) = στοιχείο. Διαφορετικά άτομα (H₂O, CO₂, NH₃) = χημική ένωση.'},
+ {id:'E2',c:'enoseis',m:['vivlio'],t:'mcq',q:'Πόσα άτομα υδρογόνου (H) έχει ένα μόριο νερού H₂O;',opts:['1','2','3'],a:1,mis:{0:'Δεν διαβάζει σωστά τον χημικό τύπο (το μικρό αριθμάκι δείχνει πόσα άτομα).',2:'Δεν διαβάζει σωστά τον χημικό τύπο (το μικρό αριθμάκι δείχνει πόσα άτομα).'},ex:'Το μικρό 2 δίπλα στο H σημαίνει 2 άτομα υδρογόνου.'},
+ {id:'E3',c:'enoseis',m:['vivlio'],t:'fill',q:'Στα στοιχεία, τα μόρια αποτελούνται από ___ είδος ατόμων.',a:['ενα','1','μονο ενα','ενα μονο'],show:'ένα',mis:{'διαφορετικα':'Ανακατεύει τους ορισμούς στοιχείου και χημικής ένωσης.'},ex:'Στοιχείο = ένα είδος ατόμων. Χημική ένωση = διαφορετικά άτομα.'},
+ {id:'E5',c:'enoseis',m:['eikona'],t:'mcq',q:'Κοίτα το μόριο: μια μεγάλη κόκκινη μπάλα (O) και δύο μικρές άσπρες (H). Ποιο είναι;',fig:()=>`<div class="fig">${MOL.H2O('')}</div>`,opts:['H₂O (νερό)','CO₂','O₂ (οξυγόνο)'],a:0,mis:{1:'Δεν συνδέει την εικόνα του μορίου με τον χημικό τύπο.',2:'Δεν συνδέει την εικόνα του μορίου με τον χημικό τύπο.'},ex:'1 οξυγόνο + 2 υδρογόνα = H₂O, το νερό.'},
+
+ {id:'K1',c:'katastaseis',m:['vivlio'],t:'mcq',q:'Σε ποια κατάσταση τα μόρια κινούνται ελεύθερα και απομακρύνονται όσο μπορούν;',opts:['στα στερεά','στα υγρά','στα αέρια'],a:2,mis:{0:'Μπερδεύει πώς κινούνται τα μόρια στις τρεις καταστάσεις.',1:'Μπερδεύει πώς κινούνται τα μόρια στα υγρά και στα αέρια.'},ex:'Στα αέρια. Γι\' αυτό γεμίζουν όλο τον χώρο.'},
+ {id:'K2',c:'katastaseis',m:['vivlio'],t:'tf',q:'Στα στερεά, τα μόρια δεν κινούνται καθόλου.',a:false,mis:'Νομίζει ότι τα μόρια των στερεών είναι ακίνητα.',ex:'Κινούνται! Τρέμουν γύρω από σταθερές θέσεις.'},
+ {id:'K3',c:'katastaseis',m:['skepsi'],t:'mcq',q:'Αδειάζω 1 λίτρο νερό από ένα μπουκάλι σε μια λεκάνη. Τι αλλάζει;',opts:['μόνο το σχήμα','το σχήμα και ο όγκος','τίποτα'],a:0,mis:{1:'Νομίζει ότι ο όγκος ενός υγρού αλλάζει όταν αλλάζει δοχείο.',2:'Δεν έχει καταλάβει ότι τα υγρά παίρνουν το σχήμα του δοχείου.'},ex:'Το νερό παίρνει το σχήμα της λεκάνης, αλλά μένει 1 λίτρο. Ο όγκος των υγρών είναι σταθερός.'},
+ {id:'K4',c:'katastaseis',m:['skepsi'],t:'mcq',q:'Δύο σύριγγες με κλειστό άκρο: η μία έχει αέρα, η άλλη νερό. Πιέζω τα έμβολα. Σε ποια θα μπει πιο μέσα το έμβολο;',opts:['σε αυτή με τον αέρα','σε αυτή με το νερό','το ίδιο και στις δύο'],a:0,mis:{1:'Δεν έχει καταλάβει ότι μόνο τα αέρια συμπιέζονται.',2:'Δεν έχει καταλάβει ότι μόνο τα αέρια συμπιέζονται.'},ex:'Ο αέρας συμπιέζεται: τα μόριά του είναι μακριά και μπορούν να έρθουν πιο κοντά. Στο νερό είναι ήδη κοντά.'},
+ {id:'K5',c:'katastaseis',m:['vivlio'],t:'match',q:'Πώς κινούνται τα μόρια; Διάλεξε για κάθε κατάσταση.',items:[['Στερεά','πολύ κοντά, γύρω από σταθερές θέσεις'],['Υγρά','αλλάζουν θέσεις, αλλά μένουν κοντά'],['Αέρια','κινούνται ελεύθερα και απομακρύνονται']],choices:['πολύ κοντά, γύρω από σταθερές θέσεις','αλλάζουν θέσεις, αλλά μένουν κοντά','κινούνται ελεύθερα και απομακρύνονται'],mis:'Μπερδεύει πώς κινούνται τα μόρια στις τρεις καταστάσεις.',ex:'Στερεά: θρανία · Υγρά: διάδρομος · Αέρια: αυλή.'},
+ {id:'K6',c:'katastaseis',m:['skepsi'],t:'tf',q:'Τα μόρια ενός αερίου είναι μεγαλύτερα από τα μόρια ενός στερεού.',a:false,mis:'Νομίζει ότι τα μόρια μεγαλώνουν όταν το σώμα γίνεται αέριο.',ex:'Τα μόρια έχουν ίδιο μέγεθος. Αλλάζει μόνο η απόσταση ανάμεσά τους.'},
+ {id:'K7',c:'katastaseis',m:['eikona'],t:'mcq',q:'Κοίτα τα τρία κουτιά με τα μόρια. Σε ποιο κουτί είναι ένα υγρό;',fig:()=>statesSvg(['gas','solid','liquid'],['Α','Β','Γ']),opts:['στο Α','στο Β','στο Γ'],a:2,mis:{0:'Δεν αναγνωρίζει στην εικόνα πώς είναι τα μόρια σε κάθε κατάσταση (το Α είναι αέριο).',1:'Δεν αναγνωρίζει στην εικόνα πώς είναι τα μόρια σε κάθε κατάσταση (το Β είναι στερεό).'},ex:'Στο Γ τα μόρια είναι κοντά αλλά ανακατεμένα, στο κάτω μέρος του δοχείου: υγρό. Β = στερεό (σε σειρές), Α = αέριο (μακριά).'},
+
+ {id:'O1',c:'ogkos',m:['vivlio'],t:'fill',q:'Ο ___ είναι ο χώρος που καταλαμβάνει ένα σώμα.',a:['ογκοσ'],show:'όγκος',mis:{'μαζα':'Μπερδεύει τον όγκο με τη μάζα.','πυκνοτητα':'Μπερδεύει τον όγκο με την πυκνότητα.'},ex:'Όγκος = χώρος. Μάζα = πόση ύλη.'},
+ {id:'O2',c:'ogkos',m:['eikona','praxi'],t:'num',q:'Κοίτα τους δύο σωλήνες. Πόσος είναι ο όγκος της πέτρας;',fig:()=>cylPair(40,65),a:25,unit:'cm³',mis:{65:'Γράφει την τελική ένδειξη αντί για τη διαφορά (τελική − αρχική).',40:'Γράφει την αρχική ένδειξη αντί για τη διαφορά.',105:'Προσθέτει τις ενδείξεις αντί να τις αφαιρεί.',20:'Διαβάζει λάθος τις γραμμές του σωλήνα.',30:'Διαβάζει λάθος τις γραμμές του σωλήνα.'},misDefault:'Δυσκολεύεται να βρει τον όγκο με τη βύθιση.',ex:'65 − 40 = 25 cm³ (1 ml = 1 cm³).'},
+ {id:'O3',c:'ogkos',m:['vivlio'],t:'mcq',q:'Με τι μετράμε τον όγκο ενός υγρού;',opts:['με τον ογκομετρικό σωλήνα','με τον ζυγό','με τη μετροταινία'],a:0,mis:{1:'Μπερδεύει τα όργανα: ο ζυγός μετράει μάζα.',2:'Μπερδεύει τα όργανα μέτρησης.'},ex:'Ογκομετρικός σωλήνας → όγκος. Ζυγός → μάζα.'},
+ {id:'O4',c:'ogkos',m:['praxi','skepsi'],t:'num',q:'Ένας σωλήνας έχει 30 ml νερό. Ρίχνω μέσα έναν βόλο με όγκο 10 cm³. Πού θα φτάσει το νερό;',a:40,unit:'ml',mis:{20:'Αφαιρεί αντί να προσθέτει: το νερό ανεβαίνει όταν βυθίζουμε κάτι.',10:'Δυσκολεύεται να βρει τον όγκο με τη βύθιση.'},misDefault:'Δυσκολεύεται να βρει τον όγκο με τη βύθιση.',ex:'Το νερό ανεβαίνει όσο ο όγκος του βόλου: 30 + 10 = 40 ml.'},
+
+ {id:'M1',c:'maza',m:['vivlio'],t:'fill',q:'Η ___ εκφράζει το ποσό της ύλης από το οποίο αποτελείται ένα σώμα.',a:['μαζα'],show:'μάζα',mis:{'πυκνοτητα':'Μπερδεύει τη μάζα με την πυκνότητα.','ογκοσ':'Μπερδεύει τη μάζα με τον όγκο.','υλη':'Δεν θυμάται τη λέξη «μάζα» για το ποσό της ύλης.'},ex:'Μάζα = πόση ύλη έχει ένα σώμα.'},
+ {id:'M2',c:'maza',m:['eikona','praxi'],t:'num',q:'Ο ζυγός ισορροπεί. Πόση είναι η μάζα του αχλαδιού;',fig:()=>balance('αχλάδι',[100,50,20,10]),a:180,unit:'g',mis:{100:'Κοιτάζει μόνο ένα σταθμό αντί για το άθροισμα όλων.',4:'Μετράει πόσα σταθμά υπάρχουν αντί να προσθέσει τις μάζες τους.'},misDefault:'Δεν έχει καταλάβει πώς βρίσκουμε τη μάζα με τον ζυγό (άθροισμα σταθμών).',ex:'100 + 50 + 20 + 10 = 180 g.'},
+ {id:'M3',c:'maza',m:['skepsi'],t:'mcq',q:'Ένας αστροναύτης πηγαίνει στη Σελήνη. Η μάζα του…',opts:['μένει ίδια','μικραίνει','μεγαλώνει'],a:0,mis:{1:'Νομίζει ότι η μάζα αλλάζει ανάλογα με το πού βρίσκεται το σώμα.',2:'Νομίζει ότι η μάζα αλλάζει ανάλογα με το πού βρίσκεται το σώμα.'},ex:'Η μάζα δεν αλλάζει όπου κι αν πάει το σώμα. Έχει την ίδια ύλη.'},
+ {id:'M4',c:'maza',m:['eikona'],t:'mcq',q:'Κοίτα τον ζυγό. Τι μας λέει;',fig:()=>tiltBalance(),opts:['το Α έχει μεγαλύτερη μάζα','το Β έχει μεγαλύτερη μάζα','έχουν ίδια μάζα'],a:0,mis:{1:'Διαβάζει ανάποδα τον ζυγό (γέρνει προς τη μεγαλύτερη μάζα).',2:'Δεν έχει καταλάβει πότε ισορροπεί ο ζυγός.'},ex:'Ο ζυγός γέρνει προς τη μεριά με τη μεγαλύτερη μάζα: το Α.'},
+
+ {id:'P1',c:'pyknotita',m:['skepsi'],t:'mcq',q:'Δύο ίδιοι κύβοι (ίδιος όγκος): ένας από χρυσό (19,3 g/cm³) και ένας από αλουμίνιο (2,7 g/cm³). Ποιος έχει μεγαλύτερη μάζα;',opts:['ο χρυσός','το αλουμίνιο','έχουν ίδια μάζα'],a:0,mis:{1:'Δεν συνδέει την πυκνότητα με τη μάζα σε ίσους όγκους.',2:'Νομίζει ότι ίδιος όγκος σημαίνει και ίδια μάζα.'},ex:'Ίδιος όγκος → μεγαλύτερη μάζα έχει το πυκνότερο υλικό, ο χρυσός.'},
+ {id:'P2',c:'pyknotita',m:['skepsi'],t:'mcq',q:'Τι έχει μεγαλύτερη μάζα: 1 kg σίδερο ή 1 kg φελλός;',opts:['έχουν ίδια μάζα','το σίδερο','ο φελλός'],a:0,mis:{1:'Μπερδεύει τη μάζα με την πυκνότητα (νομίζει ότι το «βαρύ» υλικό έχει πάντα περισσότερη μάζα).',2:'Μπερδεύει τη μάζα με τον όγκο (ο φελλός απλώς πιάνει περισσότερο χώρο).'},ex:'Και τα δύο είναι 1 kg! Ο φελλός απλώς πιάνει πολύ περισσότερο χώρο.'},
+ {id:'P3',c:'pyknotita',m:['skepsi'],t:'tf',q:'Ένα σώμα με μεγαλύτερο όγκο έχει πάντα μεγαλύτερη μάζα.',a:false,mis:'Νομίζει ότι μεγαλύτερος όγκος σημαίνει πάντα μεγαλύτερη μάζα.',ex:'Όχι πάντα: ένα μεγάλο μπαλόνι έχει μικρότερη μάζα από μια μικρή σιδερένια βίδα. Εξαρτάται από την πυκνότητα.'},
+ {id:'P4',c:'pyknotita',m:['vivlio'],t:'order',q:'Βάλε τα υλικά στη σειρά, από τη μεγαλύτερη στη μικρότερη πυκνότητα.',items:['χρυσός','σίδηρος','νερό','φελλός'],mis:'Δεν θυμάται ποια υλικά είναι πυκνότερα (πίνακας πυκνοτήτων).',ex:'Χρυσός 19,3 · σίδηρος 7,8 · νερό 1 · φελλός 0,24.'},
+ {id:'P5',c:'pyknotita',m:['vivlio'],t:'tf',q:'Ο πάγος έχει μεγαλύτερη πυκνότητα από το νερό, γιατί είναι στερεός.',a:false,mis:'Νομίζει ότι τα στερεά είναι πάντα πυκνότερα από τα υγρά (ο πάγος έχει 0,92, το νερό 1).',ex:'Ο πάγος έχει 0,92 g/cm³, λιγότερο από το νερό (1 g/cm³).'},
+ {id:'P6',c:'pyknotita',m:['eikona'],t:'mcq',q:'Οι κύβοι Α και Β έχουν τον ίδιο όγκο. Κάθε τελεία είναι λίγη μάζα. Ποιος έχει μεγαλύτερη πυκνότητα;',fig:()=>densitySvg(true),opts:['ο Α','ο Β','έχουν ίδια'],a:0,mis:{1:'Δεν «βλέπει» την πυκνότητα στην εικόνα: περισσότερη μάζα στον ίδιο χώρο = μεγαλύτερη πυκνότητα.',2:'Νομίζει ότι ίδιος όγκος σημαίνει και ίδια πυκνότητα.'},ex:'Ο Α έχει περισσότερη μάζα στον ίδιο χώρο, άρα μεγαλύτερη πυκνότητα.'},
+
+ {id:'U1',c:'monades',m:['praxi'],t:'num',q:'3 l = ? ml',a:3000,unit:'ml',mis:{300:'Κάνει λάθος στις μετατροπές: 1 l = 1000 ml (όχι 100).',30:'Κάνει λάθος στις μετατροπές: 1 l = 1000 ml.',3:'Δεν άλλαξε τον αριθμό στη μετατροπή.'},misDefault:'Κάνει λάθος στις μετατροπές μονάδων.',ex:'1 l = 1000 ml, άρα 3 l = 3 × 1000 = 3000 ml.'},
+ {id:'U2',c:'monades',m:['praxi'],t:'num',q:'2 kg = ? g',a:2000,unit:'g',mis:{200:'Κάνει λάθος στις μετατροπές: 1 kg = 1000 g (όχι 100).',20:'Κάνει λάθος στις μετατροπές: 1 kg = 1000 g.'},misDefault:'Κάνει λάθος στις μετατροπές μονάδων.',ex:'1 kg = 1000 g, άρα 2 kg = 2000 g.'},
+ {id:'U3',c:'monades',m:['vivlio'],t:'match',q:'Τι μετράει κάθε μονάδα;',items:[['cm³','Όγκος'],['kg','Μάζα'],['g/cm³','Πυκνότητα'],['ml','Όγκος'],['t (τόνος)','Μάζα']],choices:['Όγκος','Μάζα','Πυκνότητα'],mis:'Μπερδεύει ποια μονάδα ανήκει σε ποιο μέγεθος (π.χ. τόνος = μάζα, ml = όγκος).',ex:'cm³ και ml → όγκος · kg και t → μάζα · g/cm³ → πυκνότητα.'}
+];
+
+/* ======================= ΕΡΩΤΗΣΕΙΣ ΕΝΙΣΧΥΣΗΣ ======================= */
+const EXTRA = [
+ {id:'xD1',c:'domi',m:['skepsi'],t:'mcq',q:'Ο σίδηρος έλκεται από τον μαγνήτη. Το μόριο του σιδήρου…',opts:['έλκεται κι αυτό','δεν έλκεται'],a:0,ex:'Το μόριο κρατάει τις ιδιότητες του υλικού.'},
+ {id:'xD2',c:'domi',m:['vivlio'],t:'fill',q:'Τα μόρια αποτελούνται από ακόμη μικρότερα σωματίδια, τα ___.',a:['ατομα'],show:'άτομα',ex:'Μόρια → άτομα.'},
+ {id:'xD3',c:'domi',m:['eikona'],t:'mcq',q:'Κοίτα το άτομο. Τι είναι το Α, στη μέση;',fig:()=>`<div class="fig">${atomSvg(true)}</div>`,opts:['ο πυρήνας','ένα ηλεκτρόνιο','ένα μόριο'],a:0,ex:'Στη μέση είναι ο πυρήνας, με πρωτόνια και νετρόνια.'},
+ {id:'xD4',c:'domi',m:['vivlio'],t:'mcq',q:'Τι σημαίνει η λέξη «άτομο»;',opts:['αυτό που δεν κόβεται','το πιο μικρό μόριο','αυτό που κινείται'],a:0,ex:'α (όχι) + τέμνω (κόβω) = αυτό που δεν κόβεται.'},
+ {id:'xE1',c:'enoseis',m:['vivlio'],t:'mcq',q:'Το CO₂ έχει…',opts:['1 άτομο άνθρακα και 2 οξυγόνου','2 άτομα άνθρακα και 1 οξυγόνου','μόνο οξυγόνο'],a:0,ex:'C χωρίς αριθμό = 1, O₂ = 2.'},
+ {id:'xE2',c:'enoseis',m:['eikona'],t:'mcq',q:'Αυτό το υλικό έχει μόνο χρυσές μπαλίτσες (άτομα χρυσού). Είναι…',fig:()=>`<div class="fig">${MOL.Au('')}</div>`,opts:['στοιχείο','χημική ένωση'],a:0,ex:'Ένα είδος ατόμων = στοιχείο.'},
+ {id:'xE3',c:'enoseis',m:['vivlio'],t:'fill',q:'Στις χημικές ενώσεις, τα μόρια αποτελούνται από ___ άτομα.',a:['διαφορετικα'],show:'διαφορετικά',ex:'Ένωση = διαφορετικά άτομα.'},
+ {id:'xE4',c:'enoseis',m:['vivlio'],t:'mcq',q:'Πόσα άτομα υδρογόνου έχει η αμμωνία NH₃;',opts:['1','3','4'],a:1,ex:'Το μικρό 3 δίπλα στο H = 3 άτομα υδρογόνου.'},
+ {id:'xK1',c:'katastaseis',m:['skepsi'],t:'mcq',q:'Ποιο από αυτά έχει σταθερό σχήμα;',opts:['ένα κλειδί','το νερό','ο αέρας'],a:0,ex:'Το κλειδί είναι στερεό.'},
+ {id:'xK2',c:'katastaseis',m:['eikona'],t:'mcq',q:'Σε ποιο κουτί τα μόρια είναι σε σταθερές θέσεις (στερεό);',fig:()=>statesSvg(['liquid','gas','solid'],['Α','Β','Γ']),opts:['στο Α','στο Β','στο Γ'],a:2,ex:'Στο Γ τα μόρια είναι σε σειρές: στερεό.'},
+ {id:'xK3',c:'katastaseis',m:['vivlio'],t:'mcq',q:'Στα υγρά, τα μόρια…',opts:['αλλάζουν θέσεις αλλά μένουν κοντά','μένουν σε σταθερές θέσεις','απομακρύνονται όσο μπορούν'],a:0,ex:'Υγρά = μαθητές στον διάδρομο.'},
+ {id:'xK4',c:'katastaseis',m:['skepsi'],t:'tf',q:'Ένα κομμάτι πάγου έχει μόρια που τρέμουν συνεχώς.',a:true,ex:'Τα μόρια κινούνται πάντα, ακόμα και στα στερεά.'},
+ {id:'xO1',c:'ogkos',m:['eikona','praxi'],t:'num',q:'Πόσος είναι ο όγκος της πέτρας;',fig:()=>cylPair(30,50),a:20,unit:'cm³',ex:'50 − 30 = 20 cm³.'},
+ {id:'xO2',c:'ogkos',m:['praxi','skepsi'],t:'num',q:'Ο σωλήνας έχει 50 ml νερό. Ρίχνω ένα κλειδί με όγκο 5 cm³. Πού θα φτάσει το νερό;',a:55,unit:'ml',ex:'50 + 5 = 55 ml.'},
+ {id:'xO3',c:'ogkos',m:['skepsi'],t:'mcq',q:'Γιατί ανεβαίνει το νερό όταν βυθίζουμε μια πέτρα;',opts:['γιατί η πέτρα πιάνει χώρο μέσα στο νερό','γιατί η πέτρα είναι βαριά','γιατί το νερό ζεσταίνεται'],a:0,ex:'Η πέτρα έχει όγκο και «σπρώχνει» το νερό προς τα πάνω.'},
+ {id:'xM1',c:'maza',m:['eikona','praxi'],t:'num',q:'Ο ζυγός ισορροπεί. Πόση είναι η μάζα του μήλου;',fig:()=>balance('μήλο',[100,50,5]),a:155,unit:'g',ex:'100 + 50 + 5 = 155 g.'},
+ {id:'xM2',c:'maza',m:['skepsi'],t:'tf',q:'Η μάζα ενός σακιδίου αλλάζει αν το πάμε από την Αθήνα στη Θεσσαλονίκη.',a:false,ex:'Η μάζα δεν αλλάζει όπου κι αν πάει το σώμα.'},
+ {id:'xM3',c:'maza',m:['vivlio'],t:'mcq',q:'Πώς λέγονται τα σώματα γνωστής μάζας που βάζουμε στον ζυγό;',opts:['σταθμά','μόρια','ογκομετρικά'],a:0,ex:'Σταθμά.'},
+ {id:'xP1',c:'pyknotita',m:['skepsi'],t:'mcq',q:'Δύο ίδιοι κουβάδες: ο ένας γεμάτος άμμο, ο άλλος γεμάτος ποπ κορν. Ποιος έχει μεγαλύτερη μάζα;',opts:['ο κουβάς με την άμμο','ο κουβάς με το ποπ κορν','έχουν ίδια μάζα'],a:0,ex:'Ίδιος όγκος, αλλά η άμμος είναι πολύ πυκνότερη.'},
+ {id:'xP2',c:'pyknotita',m:['skepsi'],t:'mcq',q:'1 kg βαμβάκι και 1 kg σίδερο. Ποιο πιάνει περισσότερο χώρο;',opts:['το βαμβάκι','το σίδερο','τον ίδιο χώρο'],a:0,ex:'Ίδια μάζα: μεγαλύτερο όγκο έχει το λιγότερο πυκνό, το βαμβάκι.'},
+ {id:'xP3',c:'pyknotita',m:['vivlio'],t:'mcq',q:'«Η πυκνότητα του σιδήρου είναι 7,8 g/cm³» σημαίνει:',opts:['1 cm³ σιδήρου έχει μάζα 7,8 g','1 g σιδήρου πιάνει 7,8 cm³','ο σίδηρος λιώνει στους 7,8 βαθμούς'],a:0,ex:'Πυκνότητα = μάζα σε κάθε cm³.'},
+ {id:'xP4',c:'pyknotita',m:['eikona'],t:'mcq',q:'Ίδιος όγκος. Ποιος κύβος είναι από φελλό (μικρή πυκνότητα);',fig:()=>densitySvg(true),opts:['ο Α','ο Β'],a:1,ex:'Ο Β έχει λίγη μάζα στον ίδιο χώρο: μικρή πυκνότητα, όπως ο φελλός.'},
+ {id:'xU1',c:'monades',m:['praxi'],t:'num',q:'4000 ml = ? l',a:4,unit:'l',ex:'Από μικρή σε μεγάλη μονάδα: ÷ 1000. 4000 ÷ 1000 = 4.'},
+ {id:'xU2',c:'monades',m:['praxi'],t:'num',q:'3 t = ? kg',a:3000,unit:'kg',ex:'1 t = 1000 kg, άρα 3000 kg.'},
+ {id:'xU3',c:'monades',m:['praxi'],t:'num',q:'500 g = ? kg',a:0.5,unit:'kg',ex:'500 ÷ 1000 = 0,5 kg.'},
+ {id:'xU4',c:'monades',m:['vivlio'],t:'mcq',q:'Ποια μονάδα είναι μονάδα πυκνότητας;',opts:['g/cm³','cm³','kg'],a:0,ex:'Η πυκνότητα έχει «/»: g/cm³ ή kg/m³.'}
+];
+
+/* ======================= ΠΡΟΒΑ ΔΙΑΓΩΝΙΣΜΑΤΟΣ ======================= */
+const SECTIONS = {
+  sl:     {name:'Θέμα 1 · Σωστό ή Λάθος', icon:'✔✘'},
+  akro:   {name:'Θέμα 2 · Ακροστιχίδες', icon:'🔠'},
+  orismoi:{name:'Θέμα 3 · Ορισμοί', icon:'📖'},
+  theoria:{name:'Θέμα 4 · Θεωρία του βιβλίου', icon:'⚛️'},
+  te:     {name:'Θέμα 5 · Ασκήσεις Τετραδίου Εργασιών', icon:'🧪'}
+};
+function balance2(L, R, tilt, cap){
+  // tilt: 0 ισορροπεί, -1 γέρνει αριστερά, 1 γέρνει δεξιά
+  const dy = tilt*22, ly=40-(-dy), ry=40-dy;
+  const yl = 40+(tilt===-1?22:tilt===1?-22:0), yr = 40+(tilt===1?22:tilt===-1?-22:0);
+  return `<div class="fig"><svg width="320" height="180" viewBox="0 0 320 180" role="img" aria-label="${cap||'ζυγός'}">
+    <polygon points="160,40 146,160 174,160" fill="#c9d6de" stroke="#1d2b36"/><rect x="110" y="160" width="100" height="10" rx="3" fill="#8aa1ad"/>
+    <line x1="40" y1="${yl}" x2="280" y2="${yr}" stroke="#1d2b36" stroke-width="5" stroke-linecap="round"/><circle cx="160" cy="40" r="5" fill="#1d2b36"/>
+    <line x1="40" y1="${yl}" x2="40" y2="${yl+40}" stroke="#1d2b36"/><line x1="280" y1="${yr}" x2="280" y2="${yr+40}" stroke="#1d2b36"/>
+    <path d="M0 ${yl+40} Q40 ${yl+62} 80 ${yl+40} Z" fill="#dfe8ee" stroke="#1d2b36"/><path d="M240 ${yr+40} Q280 ${yr+62} 320 ${yr+40} Z" fill="#dfe8ee" stroke="#1d2b36"/>
+    <rect x="12" y="${yl+12}" width="56" height="28" rx="5" fill="#b8c2ff" stroke="#1d2b36"/><text x="40" y="${yl+31}" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#1d2b36">${L}</text>
+    <rect x="252" y="${yr+12}" width="56" height="28" rx="5" fill="#ffd0a8" stroke="#1d2b36"/><text x="280" y="${yr+31}" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#1d2b36">${R}</text>
+    ${tilt===0?`<text x="160" y="22" text-anchor="middle" font-size="12" font-weight="700" ${F} fill="#1f9e5a">ισορροπεί</text>`:''}</svg></div>`;
+}
+function cylBig(level, stone, cap){
+  const H=180, top=12, max=300, y=v=>top+H-(v/max)*H;
+  let ticks=''; for(let v=25;v<=max;v+=25){ const yy=y(v); const lab=v%50===0; ticks+=`<line x1="66" y1="${yy}" x2="${lab?78:72}" y2="${yy}" stroke="#1d2b36" stroke-width="1.5"/>`+(lab?`<text x="82" y="${yy+4}" font-size="11" ${F} fill="#1d2b36">${v}</text>`:''); }
+  return `<svg width="120" height="230" viewBox="0 0 120 230" role="img" aria-label="${cap}">
+    <rect x="22" y="${y(level)}" width="44" height="${top+H-y(level)}" fill="#8fd0f5"/>
+    <line x1="22" y1="${y(level)}" x2="66" y2="${y(level)}" stroke="#1767a8" stroke-width="2.5"/>
+    ${stone?`<ellipse cx="44" cy="${top+H-12}" rx="15" ry="10" fill="#7d8790" stroke="#1d2b36" stroke-width="1.5"/>`:''}
+    <path d="M22 ${top} V${top+H} H66 V${top}" fill="none" stroke="#1d2b36" stroke-width="2.5"/>${ticks}
+    <text x="44" y="${top+H+30}" text-anchor="middle" font-size="13" font-weight="700" ${F} fill="#1d2b36">${cap}</text></svg>`;
+}
+function tbl(rows, h){ return `<div class="fig"><table class="mini">${h?`<tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>`:''}${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</table></div>`; }
+const PRODUCTS = ()=>tbl([['Ζάχαρη','1 kg'],['Ρύζι','500 g'],['Γιαούρτι','200 g'],['Πατατάκια','100 g'],['Σοκολάτα','100 g'],['Βαμβάκι','100 g']],['Προϊόν','Μάζα']);
+const PANTRY = ()=>tbl([['Φακές','500 g'],['Ζάχαρη','1 kg'],['Καφές','100 g'],['Ρύζι','0,5 kg'],['Μαρμελάδα','50 g'],['Βαμβάκι','50 g']],['Προϊόν','Μάζα']);
+
+const PROVA = [
+ /* ---- Θέμα 1: Σωστό ή Λάθος ---- */
+ {id:'S1',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Όλα τα σώματα, στερεά, υγρά ή αέρια, είναι φτιαγμένα από ύλη.',a:true,mis:'Δεν θυμάται ότι όλα τα σώματα (και τα αέρια) είναι ύλη.',ex:'Σωστό. Ύλη υπάρχει παντού, εκτός από το κενό.'},
+ {id:'S2',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Ύλη υπάρχει παντού, ακόμα και στο κενό.',a:false,mis:'Δεν θυμάται ότι στο κενό δεν υπάρχει ύλη.',ex:'Λάθος. Ύλη δεν υπάρχει μόνο στο κενό.'},
+ {id:'S3',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Τα πρωτόνια και τα νετρόνια βρίσκονται στον πυρήνα του ατόμου.',a:true,mis:'Μπερδεύει πού βρίσκονται τα πρωτόνια και τα νετρόνια.',ex:'Σωστό. Ο πυρήνας έχει πρωτόνια και νετρόνια.'},
+ {id:'S4',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Τα ηλεκτρόνια βρίσκονται μέσα στον πυρήνα.',a:false,mis:'Νομίζει ότι τα ηλεκτρόνια είναι μέσα στον πυρήνα.',ex:'Λάθος. Τα ηλεκτρόνια περιστρέφονται γύρω από τον πυρήνα.'},
+ {id:'S5',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Τα πρωτόνια και τα νετρόνια αποτελούνται από κουάρκ.',a:true,mis:'Δεν θυμάται ότι πρωτόνια και νετρόνια φτιάχνονται από κουάρκ.',ex:'Σωστό.'},
+ {id:'S6',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Όλη η ύλη φτιάχνεται από 3 σωματίδια: τα ηλεκτρόνια και δύο είδη κουάρκ.',a:true,mis:'Δεν θυμάται τα 3 θεμελιώδη σωματίδια.',ex:'Σωστό. Ηλεκτρόνια + δύο είδη κουάρκ.'},
+ {id:'S7',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Όλη η ποικιλία των υλικών βγαίνει από 24 στοιχεία.',a:false,mis:'Μπερδεύει τα 92 στοιχεία με τα 24 γράμματα του αλφαβήτου.',ex:'Λάθος. Από 92 στοιχεία, όπως όλες οι λέξεις από 24 γράμματα.'},
+ {id:'S8',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Οι αλχημιστές τον Μεσαίωνα κατάφεραν να κάνουν την πέτρα χρυσό.',a:false,mis:'Δεν θυμάται το «Ξέρεις ότι» για τους αλχημιστές.',ex:'Λάθος. Προσπαθούσαν, αλλά δεν τα κατάφεραν.'},
+ {id:'S9',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Η ύλη μπορεί να γίνει ενέργεια και η ενέργεια ύλη.',a:true,mis:'Δεν θυμάται τη σχέση ύλης και ενέργειας.',ex:'Σωστό. Ύλη και ενέργεια συνδέονται στενά.'},
+ {id:'S10',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Δισεκατομμύρια άτομα χωράνε στο κεφάλι μιας καρφίτσας.',a:true,mis:'Δεν έχει καταλάβει πόσο μικρά είναι τα άτομα.',ex:'Σωστό. Τα άτομα είναι απίστευτα μικρά.'},
+ {id:'S11',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Στα μίγματα, τα συστατικά μπορούν να διαχωριστούν.',a:true,mis:'Δεν θυμάται τι είναι μίγμα.',ex:'Σωστό. Τα σώματα που δεν είναι μίγματα λέγονται καθαρά σώματα.'},
+ {id:'S12',sec:'sl',c:'katastaseis',m:['vivlio'],t:'tf',q:'Τα υγρά έχουν σταθερό όγκο, αλλά παίρνουν το σχήμα του δοχείου.',a:true,mis:'Μπερδεύει τι μένει ίδιο και τι αλλάζει στα υγρά.',ex:'Σωστό.'},
+ {id:'S13',sec:'sl',c:'maza',m:['vivlio'],t:'tf',q:'Μετράμε τη μάζα με το ογκομετρικό δοχείο.',a:false,mis:'Μπερδεύει τα όργανα: ζυγός → μάζα, ογκομετρικό δοχείο → όγκος.',ex:'Λάθος. Τη μάζα τη μετράμε με τον ζυγό σύγκρισης.'},
+ {id:'S14',sec:'sl',c:'pyknotita',m:['skepsi'],t:'tf',q:'Μια εφημερίδα μπορεί να έχει μεγαλύτερη μάζα από μια σιδερένια παραμάνα.',a:true,mis:'Νομίζει ότι το σίδερο έχει πάντα μεγαλύτερη μάζα (μπερδεύει μάζα και πυκνότητα).',ex:'Σωστό! Εξαρτάται από τον όγκο. Για να συγκρίνουμε υλικά, παίρνουμε ίσους όγκους.'},
+ {id:'S15',sec:'sl',c:'pyknotita',m:['vivlio'],t:'tf',q:'Μεγαλύτερη πυκνότητα έχουν τα σώματα με βαρύτερα μόρια ή με μόρια πιο κοντά το ένα στο άλλο.',a:true,mis:'Δεν συνδέει την πυκνότητα με τα μόρια.',ex:'Σωστό.'},
+
+ {id:'S16',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Τα μόρια αποτελούνται από ακόμη μικρότερα σωματίδια, τα άτομα.',a:true,mis:'Μπερδεύει μόριο και άτομο (ποιο είναι φτιαγμένο από ποιο).',ex:'Σωστό: μόρια → άτομα.'},
+ {id:'S17',sec:'sl',c:'domi',m:['skepsi'],t:'tf',q:'Το μόριο είναι μεγαλύτερο από το άτομο.',a:true,mis:'Μπερδεύει μόριο και άτομο (ποιο είναι μεγαλύτερο).',ex:'Σωστό. Το μόριο είναι φτιαγμένο από άτομα.'},
+ {id:'S18',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Στα στοιχεία, τα μόρια αποτελούνται από ένα είδος ατόμων.',a:true,mis:'Μπερδεύει τους ορισμούς στοιχείου και χημικής ένωσης.',ex:'Σωστό.'},
+ {id:'S19',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Το νερό (H₂O) είναι χημική ένωση.',a:true,mis:'Μπερδεύει στοιχεία και χημικές ενώσεις.',ex:'Σωστό: υδρογόνο + οξυγόνο = διαφορετικά άτομα.'},
+ {id:'S20',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Ο χρυσός (Au) είναι στοιχείο.',a:true,mis:'Μπερδεύει στοιχεία και χημικές ενώσεις.',ex:'Σωστό: μόνο άτομα χρυσού.'},
+ {id:'S21',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Τα σώματα που δεν είναι μίγματα λέγονται καθαρά σώματα.',a:true,mis:'Δεν θυμάται τι είναι καθαρά σώματα.',ex:'Σωστό. Τα καθαρά σώματα είναι στοιχεία ή χημικές ενώσεις.'},
+ {id:'S22',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Η λέξη «άτομο» σημαίνει «αυτό που δεν κόβεται».',a:true,mis:'Δεν θυμάται τι σημαίνει η λέξη «άτομο».',ex:'Σωστό: α (στερητικό) + τέμνω (κόβω).'},
+ {id:'S23',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Ο Δημόκριτος είχε δίκιο ότι το άτομο δεν κόβεται.',a:false,mis:'Πιστεύει ότι το άτομο δεν χωρίζεται σε μικρότερα σωματίδια.',ex:'Λάθος. Είχε δίκιο για τα μικροσκοπικά σωματίδια, αλλά το άτομο κόβεται.'},
+ {id:'S24',sec:'sl',c:'pyknotita',m:['vivlio'],t:'tf',q:'Ο πάγος έχει μικρότερη πυκνότητα από το νερό.',a:true,mis:'Νομίζει ότι τα στερεά είναι πάντα πυκνότερα από τα υγρά.',ex:'Σωστό: πάγος 0,92, νερό 1. Γι\' αυτό επιπλέει.'},
+ {id:'S25',sec:'sl',c:'katastaseis',m:['vivlio'],t:'tf',q:'Ο όγκος των αερίων αλλάζει: ο αέρας συμπιέζεται.',a:true,mis:'Δεν έχει καταλάβει ότι μόνο τα αέρια συμπιέζονται.',ex:'Σωστό.'},
+ {id:'S26',sec:'sl',c:'maza',m:['vivlio'],t:'tf',q:'Η μάζα εκφράζει πόσο ζυγίζει ένα σώμα.',a:false,mis:'Μπερδεύει τη μάζα με το βάρος.',ex:'Λάθος για το βιβλίο: η μάζα εκφράζει το ΠΟΣΟ ΤΗΣ ΥΛΗΣ του σώματος.'},
+ {id:'S27',sec:'sl',c:'maza',m:['vivlio'],t:'tf',q:'Το πρότυπο χιλιόγραμμο φυλάσσεται στο Παρίσι.',a:true,mis:'Δεν θυμάται το «Ξέρεις ότι» για το πρότυπο χιλιόγραμμο.',ex:'Σωστό.'},
+
+ /* ---- Θέμα 2: Ακροστιχίδες ---- */
+ {id:'A1',sec:'akro',c:'domi',m:['vivlio'],t:'acro',q:'Λύσε την ακροστιχίδα. Στη χρωματιστή στήλη θα βρεις μια κρυμμένη λέξη!',hidden:'ΑΤΟΜΟ',
+   rows:[{clue:'Το κέντρο του ατόμου',w:'ΠΥΡΗΝΑΣ',p:5},{clue:'Περιστρέφονται γύρω από τον πυρήνα',w:'ΗΛΕΚΤΡΟΝΙΑ',p:4},{clue:'Το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του',w:'ΜΟΡΙΟ',p:1},{clue:'Σώματα που τα συστατικά τους μπορούν να διαχωριστούν',w:'ΜΙΓΜΑΤΑ',p:0},{clue:'Από αυτά αποτελούνται τα πρωτόνια και τα νετρόνια',w:'ΚΟΥΑΡΚ',p:1}],
+   mis:'Δεν θυμάται βασικές λέξεις του 1.1 (πυρήνας, ηλεκτρόνια, μόριο, μίγματα, κουάρκ).',ex:'Κρυμμένη λέξη: ΑΤΟΜΟ. Ο Δημόκριτος το ονόμασε έτσι: α + τέμνω = αυτό που δεν κόβεται.'},
+ {id:'A2',sec:'akro',c:'maza',m:['vivlio'],t:'acro',q:'Λύσε την ακροστιχίδα. Η κρυμμένη λέξη είναι το όργανο που μετράει τη μάζα!',hidden:'ΖΥΓΟΣ',
+   rows:[{clue:'Το ποσό της ύλης από το οποίο αποτελείται ένα σώμα',w:'ΜΑΖΑ',p:2},{clue:'Η ποσότητα της μάζας στη μονάδα του όγκου',w:'ΠΥΚΝΟΤΗΤΑ',p:1},{clue:'Ο χώρος που καταλαμβάνει ένα σώμα',w:'ΟΓΚΟΣ',p:1},{clue:'Το υλικό με τη μεγαλύτερη πυκνότητα στον πίνακα (19,3)',w:'ΧΡΥΣΟΣ',p:4},{clue:'Σώματα γνωστής μάζας που βάζουμε στον ζυγό',w:'ΣΤΑΘΜΑ',p:0}],
+   mis:'Δεν θυμάται βασικές λέξεις του 1.2 (μάζα, πυκνότητα, όγκος, σταθμά).',ex:'Κρυμμένη λέξη: ΖΥΓΟΣ (ζυγός σύγκρισης).'},
+
+ /* ---- Θέμα 3: Ορισμοί ---- */
+ {id:'R1',sec:'orismoi',c:'domi',m:['vivlio'],t:'def',q:'Τι είναι το μόριο;',model:'Μόριο είναι το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του.',keys:[{l:'το μικρότερο',k:['μικροτερ','πιο μικρ','ελαχιστ']},{l:'τμήμα / κομμάτι',k:['τμημα','κομματ','μερος']},{l:'διατηρεί τις ιδιότητες',k:['ιδιοτητ']}],mis:'Δεν θυμάται ακριβώς τον ορισμό του μορίου.',ex:'Θυμήσου τη ζάχαρη: το πιο μικρό κομμάτι που είναι ακόμα γλυκό.'},
+ {id:'R2',sec:'orismoi',c:'enoseis',m:['vivlio'],t:'def',q:'Ποια σώματα λέγονται στοιχεία;',model:'Στοιχεία λέγονται τα καθαρά σώματα που τα μόριά τους αποτελούνται από ένα είδος ατόμων.',keys:[{l:'μόρια',k:['μορι']},{l:'ένα / ίδιο είδος',k:['ενα ειδοσ','ιδιο ειδοσ','ιδια ατομα','ιδιου ειδουσ','ενα μονο','ενοσ ειδουσ','1 ειδοσ']},{l:'ατόμων',k:['ατομ']}],mis:'Δεν θυμάται ακριβώς τον ορισμό του στοιχείου.',ex:'Στοιχείο = ένα είδος ατόμων (π.χ. χρυσός Au).'},
+ {id:'R3',sec:'orismoi',c:'enoseis',m:['vivlio'],t:'def',q:'Ποια σώματα λέγονται χημικές ενώσεις;',model:'Χημικές ενώσεις λέγονται τα καθαρά σώματα που τα μόριά τους αποτελούνται από διαφορετικά άτομα.',keys:[{l:'μόρια',k:['μορι']},{l:'διαφορετικά',k:['διαφορετικ','πολλα ειδη','αλλα ατομα']},{l:'άτομα',k:['ατομ']}],mis:'Δεν θυμάται ακριβώς τον ορισμό της χημικής ένωσης.',ex:'Ένωση = διαφορετικά άτομα (π.χ. νερό H₂O).'},
+ {id:'R4',sec:'orismoi',c:'enoseis',m:['vivlio'],t:'def',q:'Τι είναι τα μίγματα;',model:'Μίγματα είναι τα σώματα που τα συστατικά τους μπορούν να διαχωριστούν.',keys:[{l:'συστατικά',k:['συστατικ','υλικα τουσ','ουσιεσ']},{l:'διαχωρίζονται',k:['διαχωρ','χωριζ','ξεχωρ','χωριστ']}],mis:'Δεν θυμάται τον ορισμό του μίγματος.',ex:'Τα περισσότερα σώματα γύρω μας είναι μίγματα.'},
+ {id:'R5',sec:'orismoi',c:'domi',m:['vivlio'],t:'def',q:'Ποια λέγονται θεμελιώδη (στοιχειώδη) σωματίδια;',model:'Τα ηλεκτρόνια και τα κουάρκ λέγονται θεμελιώδη (στοιχειώδη) σωματίδια.',keys:[{l:'ηλεκτρόνια',k:['ηλεκτρον']},{l:'κουάρκ',k:['κουαρκ']}],mis:'Δεν θυμάται ποια είναι τα θεμελιώδη σωματίδια.',ex:'Ηλεκτρόνια + κουάρκ.'},
+ {id:'R6',sec:'orismoi',c:'ogkos',m:['vivlio'],t:'def',q:'Τι είναι ο όγκος ενός σώματος;',model:'Όγκος ενός σώματος είναι ο χώρος που αυτό καταλαμβάνει.',keys:[{l:'χώρος',k:['χωρο']},{l:'καταλαμβάνει',k:['καταλαμβαν','πιανει','πιανουν','γεμιζ']}],mis:'Δεν θυμάται ακριβώς τον ορισμό του όγκου.',ex:'Όγκος = πόσο χώρο πιάνει.'},
+ {id:'R7',sec:'orismoi',c:'maza',m:['vivlio'],t:'def',q:'Τι εκφράζει η μάζα ενός σώματος;',model:'Η μάζα ενός σώματος εκφράζει το ποσό της ύλης από το οποίο αυτό αποτελείται.',keys:[{l:'το ποσό',k:['ποσο','ποση','ποσοτητ']},{l:'της ύλης',k:['υλη']}],mis:'Δεν θυμάται ακριβώς τον ορισμό της μάζας (ίσως τη μπερδεύει με το βάρος).',ex:'Μάζα = πόση ύλη έχει το σώμα.'},
+ {id:'R8',sec:'orismoi',c:'pyknotita',m:['vivlio'],t:'def',q:'Τι εκφράζει η πυκνότητα;',model:'Η πυκνότητα είναι μια χαρακτηριστική ιδιότητα των σωμάτων και εκφράζει την ποσότητα της μάζας στη μονάδα του όγκου.',keys:[{l:'μάζα',k:['μαζα','μαζασ']},{l:'στη μονάδα',k:['μοναδα','καθε','σε 1','ενα κυβικο','ιδιο ογκο']},{l:'του όγκου',k:['ογκ','κυβικ','cm']}],mis:'Δεν θυμάται ακριβώς τον ορισμό της πυκνότητας.',ex:'Πυκνότητα = πόση μάζα σε κάθε cm³.'},
+
+ /* ---- Θέμα 4: Θεωρία του βιβλίου ---- */
+ {id:'T1',sec:'theoria',c:'domi',m:['vivlio'],t:'cloze',q:'Συμπλήρωσε τα κενά για το άτομο.',text:'Στο κέντρο του ατόμου βρίσκεται ο [[0]]. Μέσα του υπάρχουν τα [[1]] και τα [[2]]. Γύρω του περιστρέφονται τα [[3]]. Τα πρωτόνια και τα νετρόνια αποτελούνται από [[4]].',
+   blanks:[{a:['πυρήνας']},{a:['πρωτόνια','νετρόνια'],g:'pn'},{a:['πρωτόνια','νετρόνια'],g:'pn'},{a:['ηλεκτρόνια']},{a:['κουάρκ']}],bank:['πυρήνας','πρωτόνια','νετρόνια','ηλεκτρόνια','κουάρκ','μόρια'],mis:'Μπερδεύει τα μέρη του ατόμου.',ex:'Πυρήνας (πρωτόνια + νετρόνια) στο κέντρο, ηλεκτρόνια γύρω. Πρωτόνια και νετρόνια = κουάρκ.'},
+ {id:'T2',sec:'theoria',c:'domi',m:['vivlio'],t:'cloze',q:'Συμπλήρωσε τα κενά για τον Δημόκριτο.',text:'Τον 5ο αιώνα π.Χ. ο [[0]] είπε ότι, αν κόβουμε την ύλη, θα φτάσουμε σε ένα σωματίδιο που δεν κόβεται. Το ονόμασε [[1]]. Είχε δίκιο ότι η ύλη αποτελείται από μικροσκοπικά σωματίδια, όχι όμως ότι το άτομο [[2]].',
+   blanks:[{a:['Δημόκριτος']},{a:['άτομο']},{a:['δεν κόβεται']}],bank:['Δημόκριτος','Αριστοτέλης','άτομο','μόριο','δεν κόβεται','κόβεται'],mis:'Δεν θυμάται τι είπε ο Δημόκριτος και τι ισχύει σήμερα.',ex:'Δημόκριτος → «άτομο» = αυτό που δεν κόβεται. Σήμερα ξέρουμε ότι κόβεται (πυρήνας, ηλεκτρόνια, κουάρκ).'},
+ {id:'T3',sec:'theoria',c:'domi',m:['skepsi'],t:'order',q:'Βάλε τα στη σειρά, από το πιο μεγάλο στο πιο μικρό.',items:['μόριο','άτομο','πυρήνας','πρωτόνιο','κουάρκ'],mis:'Μπερδεύει τη σειρά: μόριο → άτομο → πυρήνας → πρωτόνιο → κουάρκ.',ex:'Μόριο → άτομο → πυρήνας → πρωτόνιο → κουάρκ.'},
+ {id:'T4',sec:'theoria',c:'enoseis',m:['vivlio'],t:'match',q:'Τι είναι το καθένα;',items:[['Χρυσός (Au)','Στοιχείο'],['Νερό (H₂O)','Χημική ένωση'],['Υδράργυρος (Hg)','Στοιχείο'],['Διοξείδιο του άνθρακα (CO₂)','Χημική ένωση'],['Θαλασσινό νερό','Μίγμα']],choices:['Στοιχείο','Χημική ένωση','Μίγμα'],mis:'Μπερδεύει στοιχεία, χημικές ενώσεις και μίγματα.',ex:'Ένα είδος ατόμων = στοιχείο · διαφορετικά άτομα = ένωση · συστατικά που διαχωρίζονται (νερό + αλάτι) = μίγμα.'},
+ {id:'T5',sec:'theoria',c:'enoseis',m:['vivlio'],t:'mcq',q:'Το νερό H₂O έχει σε κάθε μόριο…',opts:['2 άτομα υδρογόνου και 1 άτομο οξυγόνου','1 άτομο υδρογόνου και 2 άτομα οξυγόνου','2 άτομα οξυγόνου'],a:0,mis:{1:'Διαβάζει ανάποδα τον χημικό τύπο.',2:'Δεν διαβάζει σωστά τον χημικό τύπο.'},ex:'H₂ = 2 υδρογόνα, O χωρίς αριθμό = 1 οξυγόνο.'},
+ {id:'T6',sec:'theoria',c:'katastaseis',m:['vivlio'],t:'cloze',q:'Συμπλήρωσε τα κενά για τις καταστάσεις.',text:'Τα μόρια όλων των σωμάτων κινούνται [[0]]. Τα στερεά έχουν σταθερό σχήμα και σταθερό [[1]]. Τα υγρά έχουν σταθερό όγκο, αλλά παίρνουν το [[2]] του δοχείου. Στα [[3]] τα μόρια κινούνται ελεύθερα και απομακρύνονται όσο μπορούν.',
+   blanks:[{a:['συνεχώς']},{a:['όγκο']},{a:['σχήμα']},{a:['αέρια']}],bank:['συνεχώς','καθόλου','όγκο','σχήμα','αέρια','στερεά'],mis:'Μπερδεύει τι μένει σταθερό σε κάθε κατάσταση.',ex:'Τα μόρια κινούνται πάντα. Στερεά: σταθερό σχήμα και όγκος. Υγρά: σταθερός όγκος. Αέρια: τίποτα σταθερό.'},
+ {id:'T7',sec:'theoria',c:'domi',m:['skepsi'],t:'mcq',q:'Όταν καίμε ξύλο ή φυσικό αέριο…',opts:['εκμεταλλευόμαστε ένα μέρος από την ενέργεια της ύλης','φτιάχνουμε καινούργια ύλη','η ύλη γίνεται χρυσός'],a:0,mis:{1:'Δεν έχει καταλάβει τη σχέση ύλης και ενέργειας.',2:'Δεν έχει καταλάβει τη σχέση ύλης και ενέργειας.'},ex:'Στο πυρηνικό εργοστάσιο ελευθερώνεται πολύ μεγαλύτερο μέρος της ενέργειας.'},
+ {id:'T8',sec:'theoria',c:'maza',m:['vivlio'],t:'fill',q:'Η μάζα ενός σώματος είναι το ___ των μαζών των μορίων του.',a:['αθροισμα'],show:'άθροισμα',mis:{},ex:'Μάζα σώματος = άθροισμα των μαζών όλων των μορίων του.'},
+
+ {id:'T9',sec:'theoria',c:'domi',m:['vivlio'],t:'fill',q:'Τα ηλεκτρόνια και τα κουάρκ λέγονται ___ σωματίδια.',a:['θεμελιωδη','στοιχειωδη'],show:'θεμελιώδη (ή στοιχειώδη)',mis:{},ex:'Θεμελιώδη = δεν χωρίζονται σε κάτι μικρότερο.'},
+ {id:'T10',sec:'theoria',c:'domi',m:['vivlio'],t:'mcq',q:'Από πόσα είδη σωματιδίων φτιάχνεται όλη η ύλη;',opts:['3: ηλεκτρόνια και δύο είδη κουάρκ','92','24'],a:0,mis:{1:'Μπερδεύει τα 3 σωματίδια με τα 92 στοιχεία.',2:'Μπερδεύει τα 3 σωματίδια με τα 24 γράμματα.'},ex:'3 σωματίδια φτιάχνουν τα 92 στοιχεία, κι αυτά όλα τα υλικά.'},
+ {id:'T11',sec:'theoria',c:'domi',m:['vivlio'],t:'match',q:'Πού βρίσκεται το καθένα;',items:[['πρωτόνια','μέσα στον πυρήνα'],['ηλεκτρόνια','γύρω από τον πυρήνα'],['νετρόνια','μέσα στον πυρήνα'],['κουάρκ','μέσα στα πρωτόνια και στα νετρόνια']],choices:['μέσα στον πυρήνα','γύρω από τον πυρήνα','μέσα στα πρωτόνια και στα νετρόνια'],mis:'Μπερδεύει πού βρίσκεται κάθε σωματίδιο του ατόμου.',ex:'Πυρήνας = πρωτόνια + νετρόνια (από κουάρκ). Γύρω = ηλεκτρόνια.'},
+ {id:'T12',sec:'theoria',c:'domi',m:['skepsi'],t:'mcq',q:'Ποια πρόταση είναι σωστή;',opts:['Τα μόρια φτιάχνονται από άτομα','Τα άτομα φτιάχνονται από μόρια','Μόριο και άτομο είναι το ίδιο'],a:0,mis:{1:'Μπερδεύει μόριο και άτομο (ποιο είναι φτιαγμένο από ποιο).',2:'Μπερδεύει μόριο και άτομο.'},ex:'Τα μόρια (π.χ. H₂O) φτιάχνονται από άτομα (H, H, O).'},
+ {id:'T13',sec:'theoria',c:'enoseis',m:['skepsi'],t:'mcq',q:'Ποιο από αυτά είναι μίγμα;',opts:['θαλασσινό νερό','χρυσός (Au)','νερό (H₂O)'],a:0,mis:{1:'Δεν ξεχωρίζει μίγμα από στοιχείο.',2:'Δεν ξεχωρίζει μίγμα από χημική ένωση.'},ex:'Μίγμα: τα συστατικά διαχωρίζονται (π.χ. νερό και αλάτι, αέρας). Καθαρά σώματα: στοιχεία και ενώσεις.'},
+
+ /* ---- Θέμα 5: Ασκήσεις Τετραδίου Εργασιών ---- */
+ {id:'X1',sec:'te',c:'ogkos',m:['skepsi'],t:'mcq',q:'Δύο αυτοκίνητα: θέλουμε να μάθουμε ποιο χωράει περισσότερες αποσκευές. Ποια ιδιότητα συγκρίνουμε;',opts:['τον όγκο του πορτμπαγκάζ','τη μάζα του αυτοκινήτου','την πυκνότητα'],a:0,mis:{1:'Μπερδεύει τον όγκο (χώρο) με τη μάζα.',2:'Μπερδεύει τον όγκο με την πυκνότητα.'},ex:'Πόσο χωράει = πόσος χώρος = όγκος.'},
+ {id:'X2',sec:'te',c:'ogkos',m:['eikona','praxi'],t:'num',q:'Φύλλο 1 · Βυθίζουμε ένα σώμα στο ογκομετρικό δοχείο. Πόσος είναι ο όγκος του;',fig:()=>`<div class="fig">${cylBig(200,false,'Α. πριν')}${cylBig(250,true,'Β. με το σώμα')}</div><p class="hintline" style="text-align:center">Οι αριθμοί είναι ml. Κάθε γραμμή = 25 ml.</p>`,a:50,unit:'ml',mis:{250:'Γράφει την τελική ένδειξη αντί για τη διαφορά.',200:'Γράφει την αρχική ένδειξη αντί για τη διαφορά.',450:'Προσθέτει αντί να αφαιρεί.'},misDefault:'Δυσκολεύεται να βρει τον όγκο με τη βύθιση.',ex:'250 ml − 200 ml = 50 ml.'},
+ {id:'X3',sec:'te',c:'ogkos',m:['praxi'],t:'num',q:'Φύλλο 1 · Στο ογκομετρικό δοχείο έχουμε 400 ml νερό. Βυθίζουμε ένα σώμα και η στάθμη φτάνει στα 480 ml. Πόσος είναι ο όγκος του σώματος;',a:80,unit:'ml',mis:{480:'Γράφει την τελική ένδειξη αντί για τη διαφορά.',880:'Προσθέτει αντί να αφαιρεί.'},misDefault:'Δυσκολεύεται να βρει τον όγκο με τη βύθιση.',ex:'480 − 400 = 80 ml.'},
+ {id:'X4',sec:'te',c:'monades',m:['praxi','skepsi'],t:'order',q:'Φύλλο 1 · Βάλε τα δοχεία από αυτό που χωράει τα περισσότερα σε αυτό που χωράει τα λιγότερα.',items:['γάλα 2 l','νερό 1,5 l','γάλα 500 ml','αναψυκτικό 330 ml'],mis:'Δυσκολεύεται να συγκρίνει όγκους με διαφορετικές μονάδες (l και ml).',ex:'2 l = 2000 ml · 1,5 l = 1500 ml · 500 ml · 330 ml.'},
+ {id:'X5',sec:'te',c:'monades',m:['praxi'],t:'mcq',q:'Φύλλο 1 · Το μικρό χάρτινο δοχείο γάλακτος γράφει 500 ml. Το μικρό μπουκάλι νερού γράφει 0,5 l. Ποιο χωράει περισσότερο;',opts:['χωράνε το ίδιο','το γάλα','το νερό'],a:0,mis:{1:'Δεν μετατρέπει: 0,5 l = 500 ml.',2:'Δεν μετατρέπει: 0,5 l = 500 ml.'},ex:'0,5 l = 500 ml. Ίδιος όγκος, άλλη μονάδα!'},
+ {id:'X6',sec:'te',c:'ogkos',m:['skepsi'],t:'mcq',q:'Φύλλο 1 · Τι μετράει η αντλία στο βενζινάδικο;',opts:['τον όγκο της βενζίνης, σε λίτρα','τη μάζα της βενζίνης, σε κιλά','την πυκνότητα της βενζίνης'],a:0,mis:{1:'Μπερδεύει όγκο και μάζα (λίτρα = όγκος).',2:'Μπερδεύει όγκο και πυκνότητα.'},ex:'Η αντλία μετρά τον όγκο της βενζίνης σε λίτρα.'},
+ {id:'X7',sec:'te',c:'ogkos',m:['vivlio'],t:'cloze',q:'Φύλλο 1 · Συμπέρασμα. Συμπλήρωσε τα κενά.',text:'Ο [[0]] είναι μια χαρακτηριστική ιδιότητα των σωμάτων. Μετράμε τον όγκο των σωμάτων χρησιμοποιώντας το [[1]].',blanks:[{a:['όγκος']},{a:['ογκομετρικό δοχείο']}],bank:['όγκος','μάζα','ογκομετρικό δοχείο','ζυγό σύγκρισης'],mis:'Δεν θυμάται το συμπέρασμα του Φύλλου 1 (όγκος → ογκομετρικό δοχείο).',ex:'Όγκος → ογκομετρικό δοχείο.'},
+
+ {id:'X8',sec:'te',c:'maza',m:['skepsi'],t:'mcq',q:'Φύλλο 2 · Η τραμπάλα γέρνει προς τη μεριά του αγοριού. Γιατί;',opts:['γιατί το αγόρι έχει μεγαλύτερη μάζα','γιατί το αγόρι έχει μεγαλύτερο όγκο','γιατί το κορίτσι κάθεται πιο ψηλά'],a:0,mis:{1:'Μπερδεύει μάζα και όγκο.',2:'Δεν συνδέει την τραμπάλα με τον ζυγό (γέρνει προς τη μεγαλύτερη μάζα).'},ex:'Όπως ο ζυγός: γέρνει προς τη μεγαλύτερη μάζα.'},
+ {id:'X9',sec:'te',c:'monades',m:['praxi'],t:'order',q:'Φύλλο 2 · Βάλε τα προϊόντα από τη μεγαλύτερη στη μικρότερη μάζα.',items:['ζάχαρη 1 kg','ρύζι 500 g','γιαούρτι 200 g','σοκολάτα 100 g'],mis:'Δυσκολεύεται να συγκρίνει μάζες με διαφορετικές μονάδες (kg και g).',ex:'1 kg = 1000 g > 500 g > 200 g > 100 g.'},
+ {id:'X10',sec:'te',c:'maza',m:['praxi'],t:'mcq',q:'Φύλλο 2 · Στο ένα τάσι του ζυγού βάζουμε τη ζάχαρη. Τι βάζουμε στο άλλο για να ισορροπήσει;',fig:PRODUCTS,opts:['ρύζι + γιαούρτι + πατατάκια + σοκολάτα + βαμβάκι','ρύζι + γιαούρτι','γιαούρτι + σοκολάτα + βαμβάκι'],a:0,mis:{1:'Δεν προσθέτει σωστά τις μάζες ή ξεχνάει ότι 1 kg = 1000 g.',2:'Δεν προσθέτει σωστά τις μάζες ή ξεχνάει ότι 1 kg = 1000 g.'},ex:'500 + 200 + 100 + 100 + 100 = 1000 g = 1 kg.'},
+ {id:'X11',sec:'te',c:'maza',m:['praxi'],t:'mcq',q:'Φύλλο 2 · Στο ένα τάσι βάζουμε το γιαούρτι. Τι βάζουμε στο άλλο για να ισορροπήσει;',fig:PRODUCTS,opts:['σοκολάτα + βαμβάκι','ρύζι','πατατάκια'],a:0,mis:{1:'Δεν συγκρίνει σωστά τις μάζες στον ζυγό.',2:'Δεν συγκρίνει σωστά τις μάζες στον ζυγό.'},ex:'100 g + 100 g = 200 g.'},
+ {id:'X12',sec:'te',c:'maza',m:['eikona'],t:'mcq',q:'Φύλλο 2 · Βάζουμε ένα πλυντήριο και ένα ψυγείο σε έναν τεράστιο ζυγό. Τι συμπεραίνεις;',fig:()=>balance2('πλυντήριο','ψυγείο',0),opts:['οι μάζες τους είναι ίσες','το πλυντήριο έχει μεγαλύτερη μάζα','έχουν τον ίδιο όγκο'],a:0,mis:{1:'Δεν έχει καταλάβει τι σημαίνει ότι ο ζυγός ισορροπεί.',2:'Μπερδεύει μάζα και όγκο: ο ζυγός μετράει μάζα.'},ex:'Ο ζυγός ισορροπεί → οι μάζες είναι ίσες.'},
+ {id:'X13',sec:'te',c:'maza',m:['eikona'],t:'mcq',q:'Φύλλο 2 · Ποιο έχει μεγαλύτερη μάζα;',fig:()=>balance2('ψυγείο','φούρνος',-1),opts:['το ψυγείο','ο φούρνος μικροκυμάτων','έχουν ίδια μάζα'],a:0,mis:{1:'Διαβάζει ανάποδα τον ζυγό (γέρνει προς τη μεγαλύτερη μάζα).',2:'Δεν έχει καταλάβει πότε ισορροπεί ο ζυγός.'},ex:'Ο ζυγός γέρνει προς το ψυγείο: το ψυγείο έχει μεγαλύτερη μάζα.'},
+ {id:'X14',sec:'te',c:'maza',m:['praxi'],t:'mcq',q:'Φύλλο 2 · Στο ένα τάσι βάζουμε φακές, ρύζι και καφέ. Τι βάζουμε στο άλλο για να ισορροπήσει;',fig:PANTRY,opts:['ζάχαρη + μαρμελάδα + βαμβάκι','μόνο τη ζάχαρη','ζάχαρη + μαρμελάδα'],a:0,mis:{1:'Δεν προσθέτει σωστά τις μάζες ή ξεχνάει ότι 0,5 kg = 500 g.',2:'Δεν προσθέτει σωστά τις μάζες.'},ex:'500 + 500 + 100 = 1100 g · 1000 + 50 + 50 = 1100 g.'},
+ {id:'X15',sec:'te',c:'monades',m:['skepsi'],t:'cloze',q:'Φύλλο 2 · Συνταγή για αρνάκι. Διάλεξε τη σωστή μονάδα (kg ή g).',text:'2 [[0]] αρνί · 1,5 [[1]] ντομάτες · 10 [[2]] δυόσμο · 0,5 [[3]] ρύζι · 100 [[4]] ελαιόλαδο',blanks:[{a:['kg']},{a:['kg']},{a:['g']},{a:['kg']},{a:['g']}],bank:['kg','g'],mis:'Δεν έχει αίσθηση του μεγέθους kg και g (π.χ. 10 kg δυόσμος!).',ex:'2 kg αρνί, 1,5 kg ντομάτες, 10 g δυόσμο, 0,5 kg ρύζι, 100 g ελαιόλαδο.'},
+ {id:'X16',sec:'te',c:'maza',m:['vivlio'],t:'cloze',q:'Φύλλο 2 · Συμπέρασμα. Συμπλήρωσε τα κενά.',text:'Η [[0]] είναι μια χαρακτηριστική ιδιότητα των σωμάτων. Μετράμε τη μάζα ενός σώματος με [[1]]. Οι μάζες που μετράμε είναι [[2]] όταν ο ζυγός [[3]].',blanks:[{a:['μάζα']},{a:['ζυγό σύγκρισης']},{a:['ίσες']},{a:['ισορροπεί']}],bank:['μάζα','όγκος','ζυγό σύγκρισης','ογκομετρικό δοχείο','ίσες','διαφορετικές','ισορροπεί','γέρνει'],mis:'Δεν θυμάται το συμπέρασμα του Φύλλου 2 (μάζα → ζυγός, ίσες όταν ισορροπεί).',ex:'Μάζα → ζυγός σύγκρισης. Ισορροπεί → ίσες μάζες.'},
+
+ {id:'X17',sec:'te',c:'pyknotita',m:['skepsi'],t:'mcq',q:'Φύλλο 3 · Ένα παιδί σηκώνει εύκολα ένα μεγάλο κουτί, αλλά δυσκολεύεται να σηκώσει μια μικρή πέτρα. Γιατί;',opts:['η πέτρα έχει μεγαλύτερη πυκνότητα: μεγαλύτερη μάζα σε μικρότερο όγκο','η πέτρα έχει μεγαλύτερο όγκο','το κουτί δεν έχει μάζα'],a:0,mis:{1:'Μπερδεύει μάζα και όγκο.',2:'Νομίζει ότι τα ελαφριά πράγματα δεν έχουν μάζα.'},ex:'Η πυκνότητα της πέτρας είναι μεγαλύτερη γιατί έχει μεγαλύτερη μάζα σε μικρότερο όγκο.'},
+ {id:'X18',sec:'te',c:'pyknotita',m:['skepsi'],t:'order',q:'Φύλλο 3 · Όλα έχουν μάζα 1 kg. Βάλε τα από τον μεγαλύτερο στον μικρότερο όγκο.',items:['βαμβάκι','ψωμί','αλεύρι','ζάχαρη'],mis:'Δεν έχει καταλάβει ότι στην ίδια μάζα, το λιγότερο πυκνό πιάνει περισσότερο χώρο.',ex:'Βαμβάκι, ψωμί, αλεύρι, ζάχαρη. Ίδια μάζα: όσο μικρότερη πυκνότητα, τόσο μεγαλύτερος όγκος.'},
+ {id:'X19',sec:'te',c:'pyknotita',m:['praxi','eikona'],t:'order',q:'Φύλλο 3 · Κυβάκια με τον ίδιο όγκο (1 cm³). Βάλε τα από τη μεγαλύτερη στη μικρότερη πυκνότητα.',fig:()=>tbl([['Αλουμίνιο','2,7 g'],['Μόλυβδος','11,3 g'],['Χρυσός','19,3 g'],['Πάγος','0,9 g'],['Ξύλο','0,6 g'],['Σίδηρος','7,9 g']],['Κυβάκι','Μάζα']),items:['χρυσός','μόλυβδος','σίδηρος','αλουμίνιο','πάγος','ξύλο'],mis:'Δεν συνδέει: ίδιος όγκος + μεγαλύτερη μάζα = μεγαλύτερη πυκνότητα.',ex:'Χρυσός 19,3 · μόλυβδος 11,3 · σίδηρος 7,9 · αλουμίνιο 2,7 · πάγος 0,9 · ξύλο 0,6.'},
+ {id:'X20',sec:'te',c:'pyknotita',m:['vivlio'],t:'cloze',q:'Φύλλο 3 · Συμπέρασμα. Συμπλήρωσε τα κενά.',text:'Όσο μεγαλύτερη είναι η [[0]] στον ίδιο [[1]], τόσο πιο μεγάλη είναι η [[2]] ενός σώματος.',blanks:[{a:['μάζα']},{a:['όγκο']},{a:['πυκνότητα']}],bank:['μάζα','όγκο','πυκνότητα','θερμοκρασία'],mis:'Δεν θυμάται το συμπέρασμα του Φύλλου 3.',ex:'Περισσότερη μάζα στον ίδιο όγκο = μεγαλύτερη πυκνότητα.'},
+ {id:'X21',sec:'te',c:'pyknotita',m:['skepsi'],t:'mcq',q:'Φύλλο 3 · Λέμε «βυθίστηκε σα μολύβι» (μόλυβδος). Με βάση τα κυβάκια, ποιο θα ήταν πιο σωστό;',opts:['«βυθίστηκε σα χρυσός»','«βυθίστηκε σα σίδερο»','«βυθίστηκε σα ξύλο»'],a:0,mis:{1:'Δεν συγκρίνει σωστά τις πυκνότητες (ο σίδηρος είναι αραιότερος από τον μόλυβδο).',2:'Δεν συγκρίνει σωστά τις πυκνότητες (το ξύλο επιπλέει).'},ex:'Ο χρυσός έχει μεγαλύτερη πυκνότητα από τον μόλυβδο.'}
+];
+
+/* ======================= ΠΑΡΑΛΛΑΓΕΣ =======================
+   Κάθε φορά που ξεκινάει κουίζ ή πρόβα, κάθε ερώτηση παίρνει έναν τυχαίο «σπόρο».
+   Από αυτόν διαλέγεται παραλλαγή (VARS), φτιάχνονται νέοι αριθμοί (GENS) και ανακατεύονται οι επιλογές. */
+function rng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+const pick=(R,a)=>a[Math.floor(R()*a.length)];
+const rshuf=(R,a)=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(R()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const DENS=[['χρυσός',19.3],['υδράργυρος',13.6],['μόλυβδος',11.3],['χαλκός',8.9],['σίδηρος',7.8],['αλουμίνιο',2.7],['νερό',1],['πάγος',0.92],['οινόπνευμα',0.8],['φελλός',0.24]];
+const SOLIDS=[['χρυσό',19.3],['μόλυβδο',11.3],['χαλκό',8.9],['σίδηρο',7.8],['αλουμίνιο',2.7],['φελλό',0.24]];
+function convGen(kind){ return R=>{
+  const pairs = kind==='v' ? [['l','ml'],['m³','l']] : [['kg','g'],['t','kg']];
+  const [big,small]=pick(R,pairs); const up=R()<0.6; const n=pick(R,[2,3,4,5,6,1.5,2.5]);
+  if(up) return {q:`${fmtNum(n)} ${big} = ? ${small}`,a:n*1000,unit:small,mis:{[n*100]:`Κάνει λάθος στις μετατροπές: 1 ${big} = 1000 ${small} (όχι 100).`,[n*10]:`Κάνει λάθος στις μετατροπές: 1 ${big} = 1000 ${small}.`,[n]:'Δεν άλλαξε τον αριθμό στη μετατροπή.'},misDefault:'Κάνει λάθος στις μετατροπές μονάδων.',ex:`1 ${big} = 1000 ${small}, άρα ${fmtNum(n)} ${big} = ${fmtNum(n)} × 1000 = ${n*1000} ${small}.`};
+  return {q:`${n*1000} ${small} = ? ${big}`,a:n,unit:big,mis:{[n*1000]:'Δεν άλλαξε τον αριθμό στη μετατροπή.',[n*10]:`Κάνει λάθος στις μετατροπές: ÷ 1000 (όχι ÷ 100).`,[n*1000000]:'Πολλαπλασιάζει αντί να διαιρεί (από μικρή σε μεγάλη μονάδα: ÷ 1000).'},misDefault:'Κάνει λάθος στις μετατροπές μονάδων.',ex:`Από μικρή σε μεγάλη μονάδα: ÷ 1000. ${n*1000} ÷ 1000 = ${fmtNum(n)} ${big}.`};
+}; }
+function cylGen(R){ const s=pick(R,[20,30,40,50]); const d=pick(R,[15,20,25,30,35].filter(x=>s+x<=95)); const e=s+d;
+  return {fig:()=>cylPair(s,e),a:d,mis:{[e]:'Γράφει την τελική ένδειξη αντί για τη διαφορά (τελική − αρχική).',[s]:'Γράφει την αρχική ένδειξη αντί για τη διαφορά.',[s+e]:'Προσθέτει τις ενδείξεις αντί να τις αφαιρεί.',[d-5]:'Διαβάζει λάθος τις γραμμές του σωλήνα.',[d+5]:'Διαβάζει λάθος τις γραμμές του σωλήνα.'},ex:`${e} − ${s} = ${d} cm³ (1 ml = 1 cm³).`}; }
+function balGen(R){ const obj=pick(R,['αχλάδι','μήλο','πορτοκάλι','ντομάτα','λεμόνι']); let ws=rshuf(R,[200,100,50,20,10,5]).slice(0,pick(R,[3,4])).sort((a,b)=>b-a); const sum=ws.reduce((a,b)=>a+b,0);
+  return {q:`Ο ζυγός ισορροπεί. Πόση είναι η μάζα του φρούτου (${obj});`,fig:()=>balance(obj,ws),a:sum,mis:{[ws[0]]:'Κοιτάζει μόνο ένα σταθμό αντί για το άθροισμα όλων.',[ws.length]:'Μετράει πόσα σταθμά υπάρχουν αντί να προσθέσει τις μάζες τους.'},ex:`${ws.join(' + ')} = ${sum} g.`}; }
+
+const VARS = {
+ /* ---------- Διαγνωστικό ---------- */
+ D1:[{}, {q:'Το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του λέγεται ___.'}],
+ D2:[{}, {q:'Ο σίδηρος έλκεται από τον μαγνήτη. Το μόριο του σιδήρου…',opts:['έλκεται κι αυτό από τον μαγνήτη','δεν έλκεται','λιώνει'],a:0,mis:{1:'Δεν έχει καταλάβει ότι το μόριο κρατάει τις ιδιότητες του υλικού.',2:'Δεν έχει καταλάβει ότι το μόριο κρατάει τις ιδιότητες του υλικού.'},ex:'Το μόριο κρατάει τις ιδιότητες του υλικού, άρα έλκεται κι αυτό.'},
+        {q:'Το αλάτι είναι αλμυρό. Το μόριο του αλατιού είναι…',opts:['αλμυρό','γλυκό','χωρίς γεύση'],a:0,mis:{1:'Δεν έχει καταλάβει ότι το μόριο κρατάει τις ιδιότητες του υλικού.',2:'Δεν έχει καταλάβει ότι το μόριο κρατάει τις ιδιότητες του υλικού.'},ex:'Το μόριο κρατάει τις ιδιότητες του υλικού, άρα είναι αλμυρό.'}],
+ D3:[{}, {q:'Τι κινείται γύρω από τον πυρήνα του ατόμου;',opts:['τα ηλεκτρόνια','τα πρωτόνια','τα νετρόνια'],a:0,mis:{1:'Νομίζει ότι τα πρωτόνια είναι έξω από τον πυρήνα.',2:'Νομίζει ότι τα νετρόνια είναι έξω από τον πυρήνα.'},ex:'Γύρω από τον πυρήνα κινούνται τα ηλεκτρόνια. Στον πυρήνα είναι πρωτόνια και νετρόνια.'},
+        {q:'Από τι αποτελούνται τα πρωτόνια και τα νετρόνια;',opts:['από κουάρκ','από ηλεκτρόνια','από μόρια'],a:0,mis:{1:'Μπερδεύει τα σωματίδια του ατόμου.',2:'Μπερδεύει τη σειρά: τα μόρια είναι πολύ μεγαλύτερα.'},ex:'Πρωτόνια και νετρόνια φτιάχνονται από κουάρκ.'}],
+ D4:[{}, {q:'Σήμερα ξέρουμε ότι το άτομο κόβεται σε ακόμη μικρότερα σωματίδια.',a:true,ex:'Σωστό! Το άτομο έχει πυρήνα (πρωτόνια, νετρόνια) και ηλεκτρόνια. Ο Δημόκριτος είχε λάθος σε αυτό.'},
+        {q:'Ο Δημόκριτος είχε δίκιο σε όλα: η ύλη έχει μικροσκοπικά σωματίδια ΚΑΙ το άτομο δεν κόβεται.',a:false}],
+ D5:[{}, {items:['σώμα','μόριο','άτομο','πυρήνας'],ex:'Σώμα → μόριο → άτομο → πυρήνας.'},{items:['μόριο','άτομο','πρωτόνιο','κουάρκ'],ex:'Μόριο → άτομο → πρωτόνιο → κουάρκ.'}],
+ D6:[{}, {q:'Κοίτα το άτομο. Τι είναι το Α, στη μέση;',opts:['ο πυρήνας','ένα ηλεκτρόνιο','ένα μόριο'],a:0,mis:{1:'Δεν αναγνωρίζει στην εικόνα τον πυρήνα.',2:'Μπερδεύει τα μέρη του ατόμου με τα μόρια.'},ex:'Στη μέση (Α) είναι ο πυρήνας, με πρωτόνια και νετρόνια. Γύρω (Β) τα ηλεκτρόνια.'}],
+ E3:[{}, {q:'Στις χημικές ενώσεις, τα μόρια αποτελούνται από ___ άτομα.',a:['διαφορετικα'],show:'διαφορετικά',mis:{'ενα':'Ανακατεύει τους ορισμούς στοιχείου και χημικής ένωσης.','ιδια':'Ανακατεύει τους ορισμούς στοιχείου και χημικής ένωσης.'},ex:'Ένωση = διαφορετικά άτομα. Στοιχείο = ένα είδος ατόμων.'}],
+ E5:[{}, {q:'Κοίτα το μόριο: μια μαύρη μπάλα (C) στη μέση και δύο κόκκινες (O). Ποιο είναι;',fig:()=>`<div class="fig">${MOL.CO2('')}</div>`,opts:['CO₂','H₂O (νερό)','O₂ (οξυγόνο)'],a:0,mis:{1:'Δεν συνδέει την εικόνα του μορίου με τον χημικό τύπο.',2:'Δεν συνδέει την εικόνα του μορίου με τον χημικό τύπο.'},ex:'1 άνθρακας + 2 οξυγόνα = CO₂.'},
+        {q:'Κοίτα το μόριο: δύο ίδιες κόκκινες μπάλες (O). Είναι στοιχείο ή χημική ένωση;',fig:()=>`<div class="fig">${MOL.O2('')}</div>`,opts:['στοιχείο (O₂)','χημική ένωση'],a:0,mis:{1:'Νομίζει ότι 2 άτομα κάνουν ένωση, ενώ μετράει αν είναι ίδιο ή διαφορετικό είδος.'},ex:'Ένα είδος ατόμων (μόνο οξυγόνο) = στοιχείο.'}],
+ K1:[{}, {q:'Σε ποια κατάσταση τα μόρια είναι πολύ κοντά και κινούνται γύρω από σταθερές θέσεις;',opts:['στα στερεά','στα υγρά','στα αέρια'],a:0,mis:{1:'Μπερδεύει πώς κινούνται τα μόρια στα στερεά και στα υγρά.',2:'Μπερδεύει πώς κινούνται τα μόρια στις τρεις καταστάσεις.'},ex:'Στα στερεά (μαθητές στα θρανία).'},
+        {q:'Σε ποια κατάσταση τα μόρια αλλάζουν συνεχώς θέσεις, αλλά μένουν κοντά;',opts:['στα υγρά','στα στερεά','στα αέρια'],a:0,mis:{1:'Μπερδεύει πώς κινούνται τα μόρια στα στερεά και στα υγρά.',2:'Μπερδεύει πώς κινούνται τα μόρια στα υγρά και στα αέρια.'},ex:'Στα υγρά (μαθητές στον διάδρομο).'}],
+ K2:[{}, {q:'Στα στερεά, τα μόρια τρέμουν γύρω από σταθερές θέσεις.',a:true},{q:'Τα μόρια όλων των σωμάτων κινούνται συνεχώς, ακόμα και στα στερεά.',a:true}],
+ K3:[{}, {q:'Ρίχνω το νερό από ένα ψηλό ποτήρι σε ένα πλατύ πιάτο. Τι αλλάζει;'},{q:'Μεταφέρω χυμό από ένα κουτί σε μια κανάτα. Τι αλλάζει;'}],
+ K6:[{}, {q:'Όταν το νερό γίνεται υδρατμός, τα μόριά του μεγαλώνουν.',a:false,ex:'Λάθος. Τα μόρια μένουν ίδια. Απλώς απομακρύνονται.'},{q:'Στο αέριο και στο στερεό τα μόρια έχουν ίδιο μέγεθος. Αλλάζει η απόσταση ανάμεσά τους.',a:true}],
+ O1:[{}, {q:'Ο χώρος που καταλαμβάνει ένα σώμα λέγεται ___.'}],
+ O3:[{}, {q:'Πώς βρίσκουμε τον όγκο μιας πέτρας με ακανόνιστο σχήμα;',opts:['τη βυθίζουμε στο νερό του ογκομετρικού δοχείου','τη βάζουμε στον ζυγό','τη μετράμε με χάρακα'],a:0,mis:{1:'Μπερδεύει όγκο και μάζα: ο ζυγός μετράει μάζα.',2:'Δεν ξέρει ότι για ακανόνιστο σχήμα χρησιμοποιούμε βύθιση.'},ex:'Με βύθιση: όσο ανεβαίνει το νερό, τόσος είναι ο όγκος της.'}],
+ M1:[{}, {q:'Το ποσό της ύλης από το οποίο αποτελείται ένα σώμα λέγεται ___.'}],
+ M3:[{}, {q:'Ένα μήλο το πάμε από την Αθήνα στα Ιωάννινα. Η μάζα του…'},{q:'Ένας αστροναύτης βγαίνει στο διάστημα. Η μάζα του…'}],
+ P2:[{}, {q:'Τι έχει μεγαλύτερη μάζα: 1 kg πούπουλα ή 1 kg πέτρες;',opts:['έχουν ίδια μάζα','οι πέτρες','τα πούπουλα'],mis:{1:'Μπερδεύει τη μάζα με την πυκνότητα (νομίζει ότι το «βαρύ» υλικό έχει πάντα περισσότερη μάζα).',2:'Μπερδεύει τη μάζα με τον όγκο.'},ex:'Και τα δύο είναι 1 kg! Τα πούπουλα απλώς πιάνουν πολύ περισσότερο χώρο.'}],
+ P3:[{}, {q:'Ένα μεγάλο μπαλόνι έχει μεγαλύτερη μάζα από μια μικρή σιδερένια βίδα, επειδή είναι μεγαλύτερο.',a:false},{q:'Δύο σώματα με ίδιο όγκο μπορεί να έχουν διαφορετική μάζα.',a:true,ex:'Σωστό. Εξαρτάται από την πυκνότητα του υλικού.'}],
+ P5:[{}, {q:'Ο πάγος έχει μικρότερη πυκνότητα από το νερό.',a:true,ex:'Σωστό: πάγος 0,92 g/cm³, νερό 1 g/cm³. Γι\' αυτό τα παγάκια επιπλέουν!'},{q:'Τα παγάκια επιπλέουν στο νερό, γιατί ο πάγος έχει μικρότερη πυκνότητα από το νερό.',a:true,ex:'Σωστό: πάγος 0,92, νερό 1.'}],
+ /* ---------- Πρόβα: Σ/Λ ---------- */
+ S4:[{}, {q:'Τα ηλεκτρόνια περιστρέφονται γύρω από τον πυρήνα.',a:true,ex:'Σωστό.'}],
+ S7:[{}, {q:'Όλη η ποικιλία των υλικών βγαίνει από 92 στοιχεία.',a:true,ex:'Σωστό, όπως όλες οι λέξεις από 24 γράμματα.'}],
+ S8:[{}, {q:'Οι αλχημιστές δεν κατάφεραν ποτέ να κάνουν την πέτρα χρυσό.',a:true,ex:'Σωστό.'}],
+ S11:[{}, {q:'Τα συστατικά ενός μίγματος δεν μπορούν να διαχωριστούν.',a:false,ex:'Λάθος. Στα μίγματα τα συστατικά διαχωρίζονται (π.χ. νερό και αλάτι).'}],
+ S12:[{}, {q:'Τα υγρά έχουν σταθερό σχήμα.',a:false,ex:'Λάθος. Παίρνουν το σχήμα του δοχείου. Σταθερός είναι ο όγκος τους.'}],
+ S13:[{}, {q:'Μετράμε τη μάζα με τον ζυγό σύγκρισης.',a:true,ex:'Σωστό.'}],
+ S16:[{}, {q:'Τα άτομα αποτελούνται από μόρια.',a:false,ex:'Λάθος, ανάποδα: τα μόρια αποτελούνται από άτομα.'}],
+ S17:[{}, {q:'Το άτομο είναι μεγαλύτερο από το μόριο.',a:false,ex:'Λάθος. Το μόριο είναι φτιαγμένο από άτομα, άρα είναι μεγαλύτερο.'}],
+ S18:[{}, {q:'Στα στοιχεία, τα μόρια αποτελούνται από διαφορετικά άτομα.',a:false,ex:'Λάθος. Αυτό ισχύει στις χημικές ενώσεις. Στα στοιχεία: ένα είδος ατόμων.'}],
+ S19:[{}, {q:'Το νερό (H₂O) είναι στοιχείο.',a:false,ex:'Λάθος. Έχει υδρογόνο και οξυγόνο: είναι χημική ένωση.'}],
+ S20:[{}, {q:'Ο χρυσός (Au) είναι χημική ένωση.',a:false,ex:'Λάθος. Έχει μόνο άτομα χρυσού: είναι στοιχείο.'}],
+ S24:[{}, {q:'Ο πάγος έχει μεγαλύτερη πυκνότητα από το νερό, γιατί είναι στερεός.',a:false,ex:'Λάθος. Πάγος 0,92, νερό 1.'}],
+ S25:[{}, {q:'Το νερό σε μια κλειστή σύριγγα συμπιέζεται εύκολα.',a:false,ex:'Λάθος. Τα υγρά έχουν σταθερό όγκο. Ο αέρας συμπιέζεται.'}],
+ S27:[{}, {q:'Το πρότυπο χιλιόγραμμο φυλάσσεται στην Αθήνα.',a:false,ex:'Λάθος. Στο Παρίσι. Στην αρχαία Αθήνα τα πρότυπα φυλάσσονταν στον Θόλο.'}],
+ /* ---------- Πρόβα: θεωρία & ΤΕ ---------- */
+ T3:[{}, {items:['σώμα','μόριο','άτομο','ηλεκτρόνιο']},{items:['άτομο','πυρήνας','νετρόνιο','κουάρκ']}],
+ T13:[{}, {opts:['αέρας','οξυγόνο (O)','διοξείδιο του άνθρακα (CO₂)']}],
+ X11:[{}, {q:'Φύλλο 2 · Στο ένα τάσι βάζουμε το ρύζι. Τι βάζουμε στο άλλο για να ισορροπήσει;',opts:['γιαούρτι + πατατάκια + σοκολάτα + βαμβάκι','γιαούρτι + σοκολάτα','ζάχαρη'],ex:'200 + 100 + 100 + 100 = 500 g.'}],
+ X15:[{}, {q:'Φύλλο 2 · Συνταγή για κέικ και χυμό. Διάλεξε τη σωστή μονάδα (kg ή g).',text:'0,5 [[0]] αλεύρι · 250 [[1]] ζάχαρη · 5 [[2]] μπέικιν πάουντερ · 200 [[3]] βούτυρο · 1 [[4]] πορτοκάλια για χυμό',blanks:[{a:['kg']},{a:['g']},{a:['g']},{a:['g']},{a:['kg']}],ex:'0,5 kg αλεύρι, 250 g ζάχαρη, 5 g μπέικιν πάουντερ, 200 g βούτυρο, 1 kg πορτοκάλια.'}],
+ X17:[{}, {q:'Φύλλο 3 · Ένα μεγάλο μαξιλάρι σηκώνεται εύκολα, ενώ ένα μικρό σιδερένιο βαράκι δύσκολα. Γιατί;',opts:['το σίδερο έχει μεγαλύτερη πυκνότητα: μεγαλύτερη μάζα σε μικρότερο όγκο','το βαράκι έχει μεγαλύτερο όγκο','το μαξιλάρι δεν έχει μάζα'],ex:'Το σίδερο έχει μεγαλύτερη πυκνότητα: πολλή μάζα σε λίγο χώρο.'}],
+ X21:[{}, {q:'Φύλλο 3 · Λέμε «βαρύ σαν μολύβι». Ποιο κυβάκι, με τον ίδιο όγκο, θα ήταν ακόμη πιο «βαρύ»;',opts:['ο χρυσός','ο σίδηρος','το αλουμίνιο'],mis:{1:'Δεν συγκρίνει σωστά τις πυκνότητες (σίδηρος 7,9 < μόλυβδος 11,3).',2:'Δεν συγκρίνει σωστά τις πυκνότητες.'},ex:'Ο χρυσός (19,3) έχει μεγαλύτερη πυκνότητα από τον μόλυβδο (11,3).'}],
+ /* ---------- Ενίσχυση ---------- */
+ xK1:[{}, {q:'Ποιο από αυτά έχει σταθερό σχήμα;',opts:['ένα βιβλίο','ο χυμός','ο ατμός']}],
+ xM2:[{}, {q:'Η μάζα ενός παιχνιδιού αλλάζει αν το πάμε στη Σελήνη.'}]
+};
+
+const GENS = {
+ E1:R=>{ const pool=[['H₂O (νερό)','Χημική ένωση'],['Au (χρυσός)','Στοιχείο'],['CO₂','Χημική ένωση'],['O (οξυγόνο)','Στοιχείο'],['NH₃ (αμμωνία)','Χημική ένωση'],['Hg (υδράργυρος)','Στοιχείο']]; let it=rshuf(R,pool).slice(0,5); return {items:it}; },
+ E2:R=>{ const F=pick(R,[['H₂O (νερό)','υδρογόνου (H)',2,'Το μικρό 2 δίπλα στο H = 2 άτομα υδρογόνου.'],['H₂O (νερό)','οξυγόνου (O)',1,'Το O δεν έχει αριθμάκι, άρα 1 άτομο οξυγόνου.'],['CO₂','οξυγόνου (O)',2,'O₂ = 2 άτομα οξυγόνου.'],['CO₂','άνθρακα (C)',1,'Το C δεν έχει αριθμάκι, άρα 1 άτομο άνθρακα.'],['NH₃ (αμμωνία)','υδρογόνου (H)',3,'H₃ = 3 άτομα υδρογόνου.'],['NH₃ (αμμωνία)','αζώτου (N)',1,'Το N δεν έχει αριθμάκι, άρα 1.']]);
+   const m={}; [0,1,2].forEach(i=>{ if(i+1!==F[2]) m[i]='Δεν διαβάζει σωστά τον χημικό τύπο (το μικρό αριθμάκι δείχνει πόσα άτομα· χωρίς αριθμό = 1).'; });
+   return {q:`Πόσα άτομα ${F[1]} έχει ένα μόριο ${F[0]};`,opts:['1','2','3'],a:F[2]-1,mis:m,ex:F[3]}; },
+ K7:R=>{ const order=rshuf(R,['gas','solid','liquid']); const t=pick(R,['solid','liquid','gas']); const N={solid:'ένα στερεό',liquid:'ένα υγρό',gas:'ένα αέριο'}; const a=order.indexOf(t);
+   const m={}; [0,1,2].forEach(i=>{ if(i!==a) m[i]='Δεν αναγνωρίζει στην εικόνα πώς είναι τα μόρια σε κάθε κατάσταση.'; });
+   return {q:`Κοίτα τα τρία κουτιά με τα μόρια. Σε ποιο κουτί είναι ${N[t]};`,fig:()=>statesSvg(order,['Α','Β','Γ']),a,mis:m,ex:'Στερεό: μόρια σε σειρές, πολύ κοντά. Υγρό: κοντά αλλά ανακατεμένα, στο κάτω μέρος. Αέριο: μακριά το ένα από το άλλο, σε όλο το κουτί.'}; },
+ O2:cylGen, xO1:cylGen,
+ O4:R=>{ const s=pick(R,[20,30,40,50,60]); const o=pick(R,[['έναν βόλο','του βόλου'],['ένα κλειδί','του κλειδιού'],['μια πέτρα','της πέτρας'],['ένα δαχτυλίδι','του δαχτυλιδιού']]); const v=pick(R,[5,10,15,20]);
+   return {q:`Ένας σωλήνας έχει ${s} ml νερό. Ρίχνω μέσα ${o[0]} με όγκο ${v} cm³. Πού θα φτάσει το νερό;`,a:s+v,mis:{[s-v]:'Αφαιρεί αντί να προσθέτει: το νερό ανεβαίνει όταν βυθίζουμε κάτι.',[v]:'Δυσκολεύεται να βρει τον όγκο με τη βύθιση.',[s]:'Νομίζει ότι το νερό δεν ανεβαίνει.'},ex:`Το νερό ανεβαίνει όσο ο όγκος ${o[1]}: ${s} + ${v} = ${s+v} ml.`}; },
+ M2:balGen, xM1:balGen,
+ M4:R=>{ const t=pick(R,[-1,1,0]); const a=t===-1?0:t===1?1:2; const m={}; [0,1,2].forEach(i=>{ if(i!==a) m[i]= i===2||a===2 ? 'Δεν έχει καταλάβει πότε ισορροπεί ο ζυγός.' : 'Διαβάζει ανάποδα τον ζυγό (γέρνει προς τη μεγαλύτερη μάζα).'; });
+   return {fig:()=>balance2('Α','Β',t),a,mis:m,ex: t===0?'Ο ζυγός ισορροπεί: οι μάζες είναι ίσες.':`Ο ζυγός γέρνει προς τη μεριά με τη μεγαλύτερη μάζα: το ${t===-1?'Α':'Β'}.`}; },
+ P1:R=>{ const [x,y]=rshuf(R,SOLIDS).slice(0,2); const big=x[1]>y[1]?0:1;
+   return {q:`Δύο ίδιοι κύβοι (ίδιος όγκος): ένας από ${x[0]} (${fmtNum(x[1])} g/cm³) και ένας από ${y[0]} (${fmtNum(y[1])} g/cm³). Ποιος έχει μεγαλύτερη μάζα;`,opts:[`ο κύβος από ${x[0]}`,`ο κύβος από ${y[0]}`,'έχουν ίδια μάζα'],a:big,mis:{[1-big]:'Δεν συνδέει την πυκνότητα με τη μάζα σε ίσους όγκους.',2:'Νομίζει ότι ίδιος όγκος σημαίνει και ίδια μάζα.'},ex:`Ίδιος όγκος → μεγαλύτερη μάζα έχει το πυκνότερο υλικό: ${[x,y][big][0]}.`}; },
+ P4:R=>{ const it=rshuf(R,DENS).slice(0,4).sort((a,b)=>b[1]-a[1]); return {items:it.map(d=>d[0]),ex:it.map(d=>`${d[0]} ${fmtNum(d[1])}`).join(' · ')+' (g/cm³).'}; },
+ P6:R=>{ const big=R()<0.5; return big?{}:{q:'Οι κύβοι Α και Β έχουν τον ίδιο όγκο. Κάθε τελεία είναι λίγη μάζα. Ποιος έχει μικρότερη πυκνότητα;',a:1,mis:{0:'Δεν «βλέπει» την πυκνότητα στην εικόνα: λιγότερη μάζα στον ίδιο χώρο = μικρότερη πυκνότητα.',2:'Νομίζει ότι ίδιος όγκος σημαίνει και ίδια πυκνότητα.'},ex:'Ο Β έχει λιγότερη μάζα στον ίδιο χώρο, άρα μικρότερη πυκνότητα.'}; },
+ U1:convGen('v'), U2:convGen('m'), xU1:convGen('v'), xU2:convGen('m'), xU3:convGen('m'),
+ U3:R=>{ const pool=[['cm³','Όγκος'],['ml','Όγκος'],['l','Όγκος'],['m³','Όγκος'],['kg','Μάζα'],['g','Μάζα'],['t (τόνος)','Μάζα'],['g/cm³','Πυκνότητα'],['kg/m³','Πυκνότητα']];
+   let it=rshuf(R,pool).slice(0,5); if(!it.some(x=>x[1]==='Πυκνότητα')) it[4]=pick(R,pool.slice(7)); if(!it.some(x=>x[1]==='Μάζα')) it[3]=pick(R,pool.slice(4,7)); return {items:rshuf(R,it)}; },
+ /* ---------- Πρόβα ---------- */
+ A1:R=>acroGen(R,['ΑΤΟΜΟ','ΜΟΡΙΟ','ΥΛΗ','ΜΙΓΜΑ','ΚΟΥΑΡΚ'],ACRO11,{'ΑΤΟΜΟ':'Ο Δημόκριτος το ονόμασε έτσι: α + τέμνω = αυτό που δεν κόβεται (αλλά τελικά κόβεται!).','ΜΟΡΙΟ':'Το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του.','ΥΛΗ':'Από ύλη είναι φτιαγμένα όλα τα σώματα.','ΜΙΓΜΑ':'Τα συστατικά του μπορούν να διαχωριστούν.','ΚΟΥΑΡΚ':'Από αυτά φτιάχνονται τα πρωτόνια και τα νετρόνια.'}),
+ A2:R=>acroGen(R,['ΖΥΓΟΣ','ΜΑΖΑ','ΟΓΚΟΣ','ΣΤΑΘΜΑ','ΛΙΤΡΟ'],ACRO12,{'ΖΥΓΟΣ':'Με τον ζυγό σύγκρισης μετράμε τη μάζα.','ΜΑΖΑ':'Το ποσό της ύλης ενός σώματος.','ΟΓΚΟΣ':'Ο χώρος που καταλαμβάνει ένα σώμα.','ΣΤΑΘΜΑ':'Σώματα γνωστής μάζας που βάζουμε στον ζυγό.','ΛΙΤΡΟ':'Μονάδα όγκου (l). 1 l = 1000 ml.'}),
+ T4:R=>{ const pool=[['Χρυσός (Au)','Στοιχείο'],['Υδράργυρος (Hg)','Στοιχείο'],['Οξυγόνο (O)','Στοιχείο'],['Νερό (H₂O)','Χημική ένωση'],['Διοξείδιο του άνθρακα (CO₂)','Χημική ένωση'],['Αμμωνία (NH₃)','Χημική ένωση'],['Θαλασσινό νερό','Μίγμα'],['Αέρας','Μίγμα'],['Νερό με αλάτι','Μίγμα']];
+   const by=k=>rshuf(R,pool.filter(p=>p[1]===k)); const it=[...by('Στοιχείο').slice(0,2),...by('Χημική ένωση').slice(0,2),...by('Μίγμα').slice(0,1)]; return {items:rshuf(R,it)}; },
+ X2:R=>{ const s=pick(R,[100,125,150,175,200]); const d=pick(R,[25,50,75]); const e=s+d;
+   return {fig:()=>`<div class="fig">${cylBig(s,false,'Α. πριν')}${cylBig(e,true,'Β. με το σώμα')}</div><p class="hintline" style="text-align:center">Οι αριθμοί είναι ml. Κάθε γραμμή = 25 ml.</p>`,a:d,mis:{[e]:'Γράφει την τελική ένδειξη αντί για τη διαφορά.',[s]:'Γράφει την αρχική ένδειξη αντί για τη διαφορά.',[s+e]:'Προσθέτει αντί να αφαιρεί.'},ex:`${e} ml − ${s} ml = ${d} ml.`}; },
+ X3:R=>{ const s=pick(R,[300,400,500]); const d=pick(R,[30,40,50,60,70,80,90]); return {q:`Φύλλο 1 · Στο ογκομετρικό δοχείο έχουμε ${s} ml νερό. Βυθίζουμε ένα σώμα και η στάθμη φτάνει στα ${s+d} ml. Πόσος είναι ο όγκος του σώματος;`,a:d,mis:{[s+d]:'Γράφει την τελική ένδειξη αντί για τη διαφορά.',[2*s+d]:'Προσθέτει αντί να αφαιρεί.'},ex:`${s+d} − ${s} = ${d} ml.`}; },
+ X4:R=>{ const pool=[['γάλα 2 l',2000],['νερό 1,5 l',1500],['χυμός 1 l',1000],['γάλα 500 ml',500],['αναψυκτικό 330 ml',330],['νερό 750 ml',750],['λάδι 4 l',4000]];
+   const it=rshuf(R,pool).slice(0,4).sort((a,b)=>b[1]-a[1]); return {items:it.map(x=>x[0]),ex:it.map(x=>`${x[0]} = ${x[1]} ml`).join(' · ')+'.'}; },
+ X9:R=>{ const one=pick(R,['σοκολάτα','πατατάκια','βαμβάκι']); return {items:['ζάχαρη 1 kg','ρύζι 500 g','γιαούρτι 200 g',`${one} 100 g`]}; },
+ X13:R=>{ const p=pick(R,[['ψυγείο','φούρνος','το ψυγείο','ο φούρνος μικροκυμάτων'],['πλυντήριο','τοστιέρα','το πλυντήριο','η τοστιέρα'],['κουζίνα','ραδιόφωνο','η κουζίνα','το ραδιόφωνο']]); const left=R()<0.5;
+   const L=left?p[0]:p[1], Rr=left?p[1]:p[0]; const heavyName=p[2], lightName=p[3];
+   return {fig:()=>balance2(L,Rr,left?-1:1),opts:[heavyName,lightName,'έχουν ίδια μάζα'],a:0,ex:`Ο ζυγός γέρνει προς τη μεριά με τη μεγαλύτερη μάζα: ${heavyName}.`}; },
+ X19:R=>{ const pool=[['χρυσός',19.3],['μόλυβδος',11.3],['σίδηρος',7.9],['αλουμίνιο',2.7],['πάγος',0.9],['ξύλο',0.6]]; const it=rshuf(R,pool).slice(0,pick(R,[4,5]));
+   const sorted=it.slice().sort((a,b)=>b[1]-a[1]); return {fig:()=>tbl(it.map(x=>[x[0][0].toUpperCase()+x[0].slice(1),fmtNum(x[1])+' g']),['Κυβάκι','Μάζα']),items:sorted.map(x=>x[0]),ex:sorted.map(x=>`${x[0]} ${fmtNum(x[1])}`).join(' · ')+' g.'}; }
+};
+
+/* --- ακροστιχίδες με τυχαίες λέξεις --- */
+const ACRO11=[['ΠΥΡΗΝΑΣ','Το κέντρο του ατόμου'],['ΗΛΕΚΤΡΟΝΙΑ','Περιστρέφονται γύρω από τον πυρήνα'],['ΠΡΩΤΟΝΙΑ','Βρίσκονται στον πυρήνα μαζί με τα νετρόνια'],['ΝΕΤΡΟΝΙΑ','Βρίσκονται στον πυρήνα μαζί με τα πρωτόνια'],['ΜΟΡΙΟ','Το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του'],['ΑΤΟΜΑ','Από αυτά αποτελούνται τα μόρια'],['ΜΙΓΜΑΤΑ','Σώματα που τα συστατικά τους μπορούν να διαχωριστούν'],['ΚΟΥΑΡΚ','Από αυτά αποτελούνται τα πρωτόνια και τα νετρόνια'],['ΔΗΜΟΚΡΙΤΟΣ','Ο αρχαίος Έλληνας που ονόμασε το άτομο'],['ΣΤΟΙΧΕΙΑ','Καθαρά σώματα με μόρια από ένα είδος ατόμων'],['ΕΝΩΣΕΙΣ','Χημικές …: τα μόριά τους έχουν διαφορετικά άτομα'],['ΚΑΘΑΡΑ','Τα σώματα που δεν είναι μίγματα λέγονται … σώματα'],['ΕΝΕΡΓΕΙΑ','Η ύλη μπορεί να γίνει … και αντίστροφα'],['ΑΛΧΗΜΙΣΤΕΣ','Τον Μεσαίωνα προσπαθούσαν να κάνουν την πέτρα χρυσό'],['ΚΕΝΟ','Το μόνο μέρος όπου δεν υπάρχει ύλη'],['ΘΕΜΕΛΙΩΔΗ','Έτσι λέγονται τα ηλεκτρόνια και τα κουάρκ (… σωματίδια)'],['ΥΔΡΑΡΓΥΡΟΣ','Το μέταλλο που είναι υγρό (Hg)'],['ΚΑΡΦΙΤΣΑ','Στο κεφάλι της χωράνε δισεκατομμύρια άτομα'],['ΑΕΡΙΑ','Σε αυτά τα μόρια απομακρύνονται όσο μπορούν'],['ΣΤΕΡΕΑ','Έχουν σταθερό σχήμα και σταθερό όγκο'],['ΥΓΡΑ','Έχουν σταθερό όγκο, αλλά παίρνουν το σχήμα του δοχείου'],['ΟΞΥΓΟΝΟ','Το στοιχείο με σύμβολο O'],['ΧΡΥΣΟΣ','Το στοιχείο με σύμβολο Au'],['ΥΛΗ','Από αυτήν είναι φτιαγμένα όλα τα σώματα'],['ΑΜΜΩΝΙΑ','Η χημική ένωση NH₃']];
+const ACRO12=[['ΜΑΖΑ','Το ποσό της ύλης από το οποίο αποτελείται ένα σώμα'],['ΟΓΚΟΣ','Ο χώρος που καταλαμβάνει ένα σώμα'],['ΠΥΚΝΟΤΗΤΑ','Η ποσότητα της μάζας στη μονάδα του όγκου'],['ΣΤΑΘΜΑ','Σώματα γνωστής μάζας που βάζουμε στον ζυγό'],['ΖΥΓΟΣ','Με αυτόν μετράμε τη μάζα'],['ΛΙΤΡΟ','Μονάδα όγκου (l)'],['ΓΡΑΜΜΑΡΙΟ','Μονάδα μάζας (g)'],['ΤΟΝΟΣ','Μονάδα μάζας: 1000 kg'],['ΒΥΘΙΣΗ','Έτσι βρίσκουμε τον όγκο μιας πέτρας'],['ΧΡΥΣΟΣ','Το υλικό με τη μεγαλύτερη πυκνότητα στον πίνακα (19,3)'],['ΦΕΛΛΟΣ','Το στερεό με πυκνότητα 0,24 που επιπλέει'],['ΠΑΓΟΣ','Στερεό με πυκνότητα 0,92, μικρότερη από του νερού'],['ΠΑΡΙΣΙ','Εκεί φυλάσσεται το πρότυπο χιλιόγραμμο'],['ΘΟΛΟΣ','Εκεί φυλάσσονταν τα πρότυπα μάζας στην αρχαία Αγορά'],['ΙΣΟΡΡΟΠΕΙ','Όταν οι μάζες είναι ίσες, ο ζυγός …'],['ΣΙΔΗΡΟΣ','Μέταλλο με πυκνότητα 7,8 g/cm³'],['ΑΛΟΥΜΙΝΙΟ','Μέταλλο με πυκνότητα 2,7 g/cm³'],['ΣΕΛΗΝΗ','Εκεί η μάζα του αστροναύτη μένει ίδια'],['ΟΓΚΟΜΕΤΡΙΚΟ','Με το … δοχείο μετράμε τον όγκο'],['ΝΕΡΟ','Έχει πυκνότητα 1 g/cm³'],['ΑΘΡΟΙΣΜΑ','Η μάζα του σώματος είναι το … των μαζών των μορίων του'],['ΚΑΘΕ','Πυκνότητα = μάζα σε … cm³']];
+function acroGen(R, hiddens, bank, info){
+  for(let tries=0;tries<40;tries++){
+    const H=pick(R,hiddens); const used=new Set(); const rows=[]; let ok=true;
+    for(const ch of H){
+      const cands=rshuf(R,bank.filter(([w])=>!used.has(w) && w.slice(0,3)!==H.slice(0,3) && w.includes(ch) && w.length<=11));
+      if(!cands.length){ ok=false; break; }
+      const [w,clue]=cands[0]; used.add(w); const idx=[...w].map((c,i)=>c===ch?i:-1).filter(i=>i>=0); rows.push({clue,w,p:pick(R,idx)});
+    }
+    if(!ok) continue;
+    const g=Math.max(...rows.map(r=>r.p))+Math.max(...rows.map(r=>r.w.length-r.p)); if(g>13) continue;
+    return {hidden:H,rows,q:`Λύσε την ακροστιχίδα. Στη χρωματιστή στήλη θα βρεις μια κρυμμένη λέξη (${H.length} γράμματα)!`,ex:`Κρυμμένη λέξη: ${H}. ${info[H]||''}`};
+  }
+  return {};
+}
+
+function materialize(base, seed){
+  const R=rng(seed); const q=Object.assign({}, base);
+  const vs=VARS[base.id]; if(vs) Object.assign(q, vs[Math.floor(R()*vs.length)]);
+  const g=GENS[base.id]; if(g) Object.assign(q, g(R));
+  if(q.t==='mcq' && !q.opts.every(o=>o.length<=6)){
+    const idx=rshuf(R, q.opts.map((_,i)=>i));
+    const mis={}; if(q.mis) idx.forEach((old,nw)=>{ if(q.mis[old]!=null) mis[nw]=q.mis[old]; });
+    q.opts=idx.map(i=>q.opts[i]); q.a=idx.indexOf(q.a); q.mis=mis;
+  }
+  return q;
+}
+const newSeed=()=>Math.floor(Math.random()*2147483647);
+
+/* ======================= ΒΟΗΘΗΤΙΚΑ ======================= */
+const $ = s => document.querySelector(s);
+const view = $('#view');
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ς/g,'σ').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+const toNum = s => { const t=String(s||'').replace(/\s/g,'').replace(',','.').replace(/[^\d.\-]/g,''); return t===''?NaN:parseFloat(t); };
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const fmtNum = n => String(n).replace('.',',');
+const pct = (g,t) => t? Math.round(g/t*100) : null;
+const PRAISE = ['Μπράβο!','Τέλεια!','Σωστά!','Πολύ ωραία!','Έτσι ακριβώς!'];
+const LS='kouiz-ylika-progress-v3';
+function setColor(c){ const k=CONCEPTS[c]; document.documentElement.style.setProperty('--c',k.col); document.documentElement.style.setProperty('--c-soft',k.soft); }
+function brandColor(){ document.documentElement.style.setProperty('--c','#ff6b4a'); document.documentElement.style.setProperty('--c-soft','#ffe7e0'); }
+function store(k,v){ try{ if(v===undefined) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function load(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; } }
+const baseById = id => MAIN.find(q=>q.id===id) || PROVA.find(q=>q.id===id) || EXTRA.find(q=>q.id===id);
+let QC={};
+const byId = id => { if(QC[id]) return QC[id]; const b=baseById(id); if(!b) return b; const sd=S.seeds&&S.seeds[id]; if(sd==null) return b; return (QC[id]=materialize(b,sd)); };
+function seedList(ids){ S.seeds=S.seeds||{}; ids.forEach(id=>{ S.seeds[id]=newSeed(); delete QC[id]; }); }
+const PN={sl:15,theoria:8};
+const provaCount = k => PN[k]||PROVA.filter(q=>q.sec===k).length;
+const provaTotal = () => Object.keys(SECTIONS).reduce((a,k)=>a+provaCount(k),0);
+const typeGroup = t => Object.keys(TYPES).find(k=>TYPES[k].types.includes(t));
+function wordsOf(q){ let s=q.q; if(q.text) s+=' '+q.text; if(q.rows) s+=' '+q.rows.map(r=>r.clue).join(' '); if(q.opts) s+=' '+q.opts.join(' '); if(q.items) s+=' '+q.items.flat().join(' '); return s.split(/\s+/).filter(Boolean).length; }
+
+/* ======================= ΚΑΤΑΣΤΑΣΗ ======================= */
+let S = { mode:'diag', name:(function(){ try{ return localStorage.getItem('kouiz-name')||''; }catch(e){ return ''; } })(), phase:'start', list:[], idx:0, answers:{}, started:null, survey:{}, rList:[], rIdx:0, rAnswers:{}, rLog:[], docId:null };
+let db=null, userCap=null, isEditor=false, attemptsUnsub=null;
+
+/* ======================= ΒΑΘΜΟΛΟΓΗΣΗ ======================= */
+function grade(q, resp){
+  if(q.t==='mcq'){ const ok=resp===q.a; return {score:ok?1:0, mis: ok?null:((q.mis&&q.mis[resp])||null), given:q.opts[resp], right:q.opts[q.a]}; }
+  if(q.t==='tf'){ const ok=resp===q.a; return {score:ok?1:0, mis: ok?null:(q.mis||null), given:resp?'Σωστό':'Λάθος', right:q.a?'Σωστό':'Λάθος'}; }
+  if(q.t==='fill'){ const n=norm(resp); const ok=q.a.some(x=>norm(x)===n); let mis=null; if(!ok && q.mis){ for(const k in q.mis){ if(norm(k)===n){ mis=q.mis[k]; break; } } } return {score:ok?1:0, mis, given:resp||'(κενό)', right:q.show}; }
+  if(q.t==='num'){ const v=toNum(resp); const ok=Math.abs(v-q.a)<1e-9; let mis=null; if(!ok){ mis=(q.mis&&q.mis[v])||q.misDefault||null; } return {score:ok?1:0, mis, given:(isNaN(v)?String(resp||'(κενό)'):fmtNum(v))+' '+q.unit, right:fmtNum(q.a)+' '+q.unit}; }
+  if(q.t==='match'){ let c=0; q.items.forEach((it,i)=>{ if(resp[i]===it[1]) c++; }); const sc=c/q.items.length; return {score:sc, mis: sc<1?(q.mis||null):null, given:q.items.map((it,i)=>it[0]+' → '+(resp[i]||'—')).join(' · '), right:q.items.map(it=>it[0]+' → '+it[1]).join(' · ')}; }
+  if(q.t==='acro'){ const ok=q.rows.map((r,i)=>norm(resp[i]).replace(/\s/g,'')===norm(r.w)); const c=ok.filter(Boolean).length; const sc=c/q.rows.length; const miss=q.rows.filter((r,i)=>!ok[i]).map(r=>r.w); return {score:sc, n:c, of:q.rows.length, okRows:ok, mis: sc<1?(q.mis||null):null, given:q.rows.map((r,i)=>(resp[i]||'—').toUpperCase()).join(', '), right:q.rows.map(r=>r.w).join(', ')+' → '+q.hidden}; }
+  if(q.t==='def'){ const n=' '+norm(resp)+' '; const hit=q.keys.map(g=>g.k.some(k=>n.includes(norm(k)))); const c=hit.filter(Boolean).length; const sc=c/q.keys.length; return {score:sc, n:c, of:q.keys.length, hit, mis: sc<1?(q.mis||null):null, given:resp||'(κενό)', right:q.model}; }
+  if(q.t==='cloze'){ const used={}; const ok=q.blanks.map((b,i)=>{ const r=resp[i]; if(!r || !b.a.includes(r)) return false; if(b.g){ used[b.g]=used[b.g]||[]; if(used[b.g].includes(r)) return false; used[b.g].push(r); } return true; }); const c=ok.filter(Boolean).length; const sc=c/q.blanks.length; return {score:sc, n:c, of:q.blanks.length, okB:ok, mis: sc<1?(q.mis||null):null, given:q.blanks.map((b,i)=>resp[i]||'—').join(' · '), right:clozeRight(q)}; }
+  if(q.t==='order'){ let c=0; q.items.forEach((it,i)=>{ if(resp[i]===it) c++; }); const sc=c/q.items.length; return {score:sc, mis: sc<1?(q.mis||null):null, given:resp.join(' → '), right:q.items.join(' → ')}; }
+}
+
+function clozeRight(q){ const seen={}; return q.blanks.map(b=>{ if(!b.g) return b.a[0]; seen[b.g]=(seen[b.g]||0); return b.a[seen[b.g]++]; }).join(' · '); }
+function acroGeom(q){ const L=Math.max(...q.rows.map(r=>r.p)); const R=Math.max(...q.rows.map(r=>r.w.length-r.p)); return {L,R,N:L+R}; }
+function acroGrid(q, words){ const g=acroGeom(q); let h=''; q.rows.forEach((r,i)=>{ h+=`<b>${i+1}</b>`; const off=g.L-r.p; const w=(words&&words[i])||''; for(let x=0;x<g.N;x++){ const j=x-off; if(j<0||j>=r.w.length){ h+='<i class="e"></i>'; continue; } const ch=w[j]||''; h+=`<i class="${j===r.p?'k':''}">${esc(ch)}</i>`; } }); return `<div class="agrid" style="grid-template-columns:18px repeat(${g.N},minmax(0,1fr));max-width:${18+g.N*34}px">${h}</div>`; }
+const upLetters = s => norm(s).replace(/\s/g,'').toUpperCase();
+
+/* ======================= ΟΙ ΠΡΟΣΠΑΘΕΙΕΣ ΜΟΥ (στον υπολογιστή της) ======================= */
+const LSH='kouiz-ylika-history-v1';
+function histLoad(){ const h=load(LSH); return Array.isArray(h)?h:[]; }
+function histAdd(){
+  const A=S.result; const per={}; Object.keys(A.per).forEach(k=>{ const v=pct(A.per[k].got,A.per[k].total); if(v!==null) per[k]=v; });
+  const h=histLoad(); const e={id:Date.now(), ts:Date.now(), mode:S.mode, pct:A.pct, got:+A.got.toFixed(1), total:A.total, per};
+  h.push(e); store(LSH,h.slice(-40)); S.histId=e.id;
+}
+function histReinf(p){ const h=histLoad(); const e=h.find(x=>x.id===S.histId); if(e){ e.reinf=p; store(LSH,h); } }
+function historyCard(mode, compare){
+  const all=histLoad().filter(e=>e.mode===mode); if(!all.length) return '';
+  const name = mode==='prova'?'στην πρόβα διαγωνίσματος':'στο κουίζ';
+  const best=Math.max(...all.map(e=>e.pct));
+  let top='';
+  if(compare && all.length>=2){ const now=all[all.length-1], prev=all[all.length-2]; const d=now.pct-prev.pct;
+    top = d>0 ? `<p class="hbig">🚀 Ανέβηκες <b>${d}%</b> από την προηγούμενη φορά (${prev.pct}% → ${now.pct}%)!</p>`
+        : d===0 ? `<p class="hbig">💪 Ίδιο σκορ με την προηγούμενη φορά (${now.pct}%). Συνέχισε!</p>`
+        : `<p class="hbig">🌱 Την προηγούμενη φορά είχες ${prev.pct}%, τώρα ${now.pct}%. Οι ερωτήσεις αλλάζουν κάθε φορά, οπότε είναι φυσικό. Ξαναδοκίμασε!</p>`;
+    if(now.pct===best && all.length>=2 && d>0) top+=`<p class="hbig">⭐ Νέο ρεκόρ!</p>`; }
+  else if(!compare) top=`<p>Μέχρι τώρα: <b>${all.length}</b> ${all.length===1?'προσπάθεια':'προσπάθειες'} ${name} · καλύτερο σκορ <b>${best}%</b></p>`;
+  const rows=all.slice(-8).map((e,i,arr)=>{ const d=new Date(e.ts); const last=compare&&i===arr.length-1;
+    return `<div class="hrow${last?' now':''}"><span class="hd">${d.toLocaleDateString('el-GR',{day:'numeric',month:'short'})} ${d.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'})}${last?' · τώρα':''}</span><div class="htr"><i style="width:${Math.max(3,e.pct)}%;background:${e.pct>=80?'#1f9e5a':e.pct>=50?'#f0a020':'#e5484d'}"></i></div><b class="hp">${e.pct}%</b></div>`; }).join('');
+  return `<div class="card stack hist2"><h2>📈 Οι προσπάθειές σου ${name}</h2>${top}<div>${rows}</div>${all.length>8?`<p class="hintline">Φαίνονται οι τελευταίες 8 από ${all.length}.</p>`:''}</div>`;
+}
+/* ======================= ΕΝΑΡΞΗ ======================= */
+function renderStart(){
+  brandColor();
+  const saved = load(LS);
+  const counts = Object.keys(CONCEPTS).map(k=>`<span class="pill" style="background:${CONCEPTS[k].soft};color:${CONCEPTS[k].col}">${CONCEPTS[k].name}</span>`).join('');
+  const P=S.mode==='prova';
+  view.innerHTML = `<div class="card stack">
+    <h1>Κουίζ: Υλικά σώματα 🔬</h1>
+    <div class="mode2"><button data-m="diag" class="${P?'':'sel'}"><span>🧭</span>Διαγνωστικό κουίζ<small>${MAIN.length} ερωτήσεις · δείχνει τι ξέρεις και πώς μαθαίνεις · νέες παραλλαγές κάθε φορά</small></button>
+      <button data-m="prova" class="${P?'sel':''}"><span>📝</span>Πρόβα διαγωνίσματος<small>${provaTotal()} ερωτήσεις · όπως το τεστ του σχολείου · κάθε φορά διαφορετικές</small></button></div>
+    ${P?`<p><b>Πρόβα διαγωνίσματος:</b> ${Object.keys(SECTIONS).map(k=>SECTIONS[k].name.split('· ')[1]+' ('+provaCount(k)+')').join(', ')}. Οι ασκήσεις είναι από το Τετράδιο Εργασιών και τη θεωρία του βιβλίου.</p>`:`<p>${MAIN.length} ερωτήσεις: κενά, Σωστό/Λάθος, πολλαπλής επιλογής, αντιστοιχίσεις, σειρά, εικόνες και πράξεις.</p>`}
+    <p>Σε κάθε ερώτηση, πριν τον έλεγχο, πες μας και <b>πόσο σίγουρη είσαι</b> (🤔 Μαντεύω · 🙂 Νομίζω · 😎 Σίγουρη). Δεν πειράζει να μαντέψεις! Απλώς πες την αλήθεια, για να δούμε τι ξέρεις.</p>
+    <p>Στο τέλος θα δεις <b>τι ξέρεις καλά</b> και <b>τι θέλει λίγη δουλειά</b>. Μετά κάνουμε μαζί εξάσκηση!</p>
+    <div class="pills">${counts}</div>
+    ${historyCard(S.mode,false)}
+    <div><label class="lbl" for="nm">Πώς σε λένε;</label><input type="text" id="nm" value="${esc(S.name)}" autocomplete="off"></div>
+    <div class="row"><button class="btn" id="go">Ξεκίνα! →</button><button class="btn ghost" id="printv">🖨️ Διαγώνισμα για εκτύπωση</button>
+      ${saved && saved.phase==='quiz' ? `<button class="btn ghost" id="resume">Συνέχισε ${saved.mode==='prova'?'την πρόβα':'το κουίζ'} από την ερώτηση ${saved.idx+1}</button>` : ''}</div>
+  </div>`;
+  view.querySelectorAll('.mode2 button').forEach(b=>b.onclick=()=>{ S.name=($('#nm').value.trim()||S.name); S.mode=b.dataset.m; renderStart(); });
+  $('#go').onclick = ()=>{ S.name=$('#nm').value.trim(); try{ localStorage.setItem('kouiz-name',S.name); }catch(e){} S.list= S.mode==='prova' ? provaList() : shuffleWithinBlocks(); S.seeds={}; QC={}; seedList(S.list); S.idx=0; S.answers={}; S.survey={}; S.rLog=[]; S.reinf=null; S.started=Date.now(); S.phase='quiz'; S.docId=null; persist(); renderQ(); };
+  $('#printv').onclick=()=>{ S.name=($('#nm').value.trim()||S.name); renderPrint(); };
+  if($('#resume')) $('#resume').onclick = ()=>{ Object.assign(S, saved); QC={}; renderQ(); };
+}
+function shuffleWithinBlocks(){ let out=[]; Object.keys(CONCEPTS).forEach(c=>{ out=out.concat(shuffle(MAIN.filter(q=>q.c===c).map(q=>q.id))); }); return out; }
+function provaList(){ let out=[]; Object.keys(SECTIONS).forEach(k=>{ let ids=PROVA.filter(q=>q.sec===k).map(q=>q.id); if(k!=='te'&&k!=='akro') ids=shuffle(ids); if(PN[k]) ids=ids.slice(0,PN[k]); out=out.concat(ids); }); return out; }
+function persist(){ if(S.phase==='quiz') store(LS,{seeds:S.seeds,mode:S.mode,phase:S.phase,list:S.list,idx:S.idx,answers:S.answers,name:S.name,started:S.started}); else store(LS); }
+
+/* ======================= ΕΡΩΤΗΣΗ ======================= */
+let cur=null;
+function renderQ(isR){
+  const list=isR?S.rList:S.list, idx=isR?S.rIdx:S.idx;
+  const q=byId(list[idx]); setColor(q.c);
+  cur={q, resp:(q.t==='match'?q.items.map(()=>''):q.t==='order'?[]:q.t==='acro'?q.rows.map(()=>''):q.t==='cloze'?q.blanks.map(()=>''):null), conf:null, checked:false, isR, t0:performance.now()};
+  const total=list.length;
+  const prompt = q.t==='fill' ? esc(q.q).replace('___','<span class="gap"></span>') : esc(q.q);
+  let body='';
+  if(q.t==='mcq'){ const L=['α','β','γ','δ']; body=`<div class="opts">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}"><b>${L[i]}</b><span>${esc(o)}</span></button>`).join('')}</div>`; }
+  if(q.t==='tf'){ body=`<div class="opts tf"><button class="opt" data-v="1">✔ Σωστό</button><button class="opt" data-v="0">✘ Λάθος</button></div>`; }
+  if(q.t==='fill'){ body=`<div><label class="lbl" for="ans">Γράψε τη λέξη που λείπει:</label><input type="text" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false"></div><p class="hintline">Δεν πειράζει αν ξεχάσεις τον τόνο.</p>`; }
+  if(q.t==='num'){ body=`<div><label class="lbl" for="ans">Η απάντησή σου:</label><div class="unitbox"><input type="text" id="ans" inputmode="decimal" autocomplete="off"><span>${esc(q.unit)}</span></div></div>`; }
+  if(q.t==='match'){ body=q.items.map((it,i)=>`<div class="matchrow" data-r="${i}"><span class="k">${esc(it[0])}</span><select id="m${i}" data-i="${i}"><option value="">διάλεξε…</option>${q.choices.map(c=>`<option>${esc(c)}</option>`).join('')}</select></div>`).join(''); }
+  if(q.t==='acro'){ body=`<div id="ag">${acroGrid(q)}</div>`+q.rows.map((r,i)=>`<div class="acrow"><label class="lbl" for="a${i}" style="margin:0">${i+1}. ${esc(r.clue)} <span class="note2">(${r.w.length} γράμματα)</span></label><input type="text" id="a${i}" data-i="${i}" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="${r.w.length+2}"></div>`).join('')+`<p class="hintline">Γράψε κάθε λέξη στο κουτάκι της. Δεν χρειάζονται τόνοι.</p>`; }
+  if(q.t==='def'){ body=`<div><label class="lbl" for="ans">Γράψε τον ορισμό, όπως στο βιβλίο:</label><textarea class="def" id="ans" autocomplete="off" spellcheck="false"></textarea></div><p class="hintline">Ελέγχουμε αν έχεις γράψει τις λέξεις-κλειδιά.</p>`; }
+  if(q.t==='cloze'){ const sel=i=>`<select data-i="${i}" aria-label="κενό ${i+1}"><option value="">(${i+1}) …</option>${q.bank.map(w=>`<option>${esc(w)}</option>`).join('')}</select>`; body=`<div class="cz">${esc(q.text).replace(/\[\[(\d+)\]\]/g,(m,i)=>sel(+i))}</div>`; }
+  if(q.t==='order'){ cur.pool=shuffle(q.items); if(cur.pool.join()===q.items.join()) cur.pool.reverse(); body=`<p class="hintline">Πάτα τις λέξεις με τη σωστή σειρά. Αν κάνεις λάθος, πάτα μια λέξη από κάτω για να τη βγάλεις.</p><div class="pool" id="pool"></div><div class="seq" id="seq" aria-label="Η σειρά σου"></div>`; }
+  view.innerHTML = `<div class="card">
+    <div class="prog"><i style="width:${(idx/total)*100}%"></i></div>
+    <div class="qmeta"><span class="tag">${isR?'Ενίσχυση · ':''}${q.sec&&!isR?SECTIONS[q.sec].name:CONCEPTS[q.c].name}</span><span>Ερώτηση ${idx+1} από ${total}</span></div>
+    <div class="qtext">${prompt}</div>
+    ${q.fig? q.fig():''}
+    ${body}
+    <div class="conf" id="conf"><p>Πόσο σίγουρη είσαι;</p><div class="cb">${CONF.map(c=>`<button data-c="${c.v}"><span>${c.icon}</span>${c.name}</button>`).join('')}</div></div>
+    <div id="fbx"></div>
+    <div class="row end" style="margin-top:14px"><button class="btn c" id="check" disabled>Έλεγχος</button></div>
+  </div>`;
+  const check=$('#check');
+  const ready=()=>{ check.disabled = !(answerReady() && cur.conf!==null); };
+  function answerReady(){
+    if(q.t==='mcq'||q.t==='tf') return cur.resp!==null;
+    if(q.t==='fill') return norm(cur.resp).length>0;
+    if(q.t==='num') return !isNaN(toNum(cur.resp));
+    if(q.t==='match') return cur.resp.every(v=>v);
+    if(q.t==='order') return cur.resp.length===q.items.length;
+    if(q.t==='acro') return cur.resp.some(v=>norm(v).length>0);
+    if(q.t==='def') return norm(cur.resp).length>=3;
+    if(q.t==='cloze') return cur.resp.every(v=>v);
+  }
+  if(q.t==='mcq') view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(cur.checked) return; cur.resp=+b.dataset.i; view.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b)); ready(); });
+  if(q.t==='tf') view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(cur.checked) return; cur.resp=b.dataset.v==='1'; view.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b)); ready(); });
+  if(q.t==='fill'||q.t==='num'){ const inp=$('#ans'); inp.oninput=()=>{ cur.resp=inp.value; ready(); }; inp.onkeydown=e=>{ if(e.key==='Enter'){ if(!cur.checked && !check.disabled) doCheck(); else if(cur.checked && $('#next')) $('#next').click(); } }; setTimeout(()=>inp.focus(),30); }
+  if(q.t==='match') view.querySelectorAll('select').forEach(s=>s.onchange=()=>{ cur.resp[+s.dataset.i]=s.value; ready(); });
+  if(q.t==='order') drawOrder();
+  if(q.t==='def'){ const inp=$('#ans'); inp.oninput=()=>{ cur.resp=inp.value; ready(); }; }
+  if(q.t==='acro') view.querySelectorAll('.acrow input').forEach(inp=>{ inp.oninput=()=>{ cur.resp[+inp.dataset.i]=inp.value; $('#ag').innerHTML=acroGrid(q,cur.resp.map(upLetters)); ready(); }; inp.onkeydown=e=>{ if(e.key==='Enter'){ const n=$('#a'+(+inp.dataset.i+1)); if(n) n.focus(); } }; });
+  if(q.t==='cloze') view.querySelectorAll('.cz select').forEach(s=>s.onchange=()=>{ cur.resp[+s.dataset.i]=s.value; ready(); });
+  view.querySelectorAll('#conf button').forEach(b=>b.onclick=()=>{ if(cur.checked) return; cur.conf=+b.dataset.c; view.querySelectorAll('#conf button').forEach(x=>x.classList.toggle('sel',x===b)); ready(); });
+  check.onclick=doCheck; cur.ready=ready;
+}
+function drawOrder(){
+  const pool=$('#pool'), seq=$('#seq');
+  pool.innerHTML = cur.pool.filter(w=>!cur.resp.includes(w)).map(w=>`<button class="chipbtn" data-w="${esc(w)}">${esc(w)}</button>`).join('') || '<span class="hintline">Τέλεια, τα έβαλες όλα!</span>';
+  seq.innerHTML = cur.resp.map((w,i)=>`<button class="chipbtn" data-w="${esc(w)}"><span>${i+1}.</span>${esc(w)}</button>`).join('') || '<span class="hintline">Εδώ μπαίνει η σειρά σου…</span>';
+  if(cur.checked) return;
+  pool.querySelectorAll('.chipbtn').forEach(b=>b.onclick=()=>{ cur.resp.push(b.dataset.w); drawOrder(); cur.ready(); });
+  seq.querySelectorAll('.chipbtn').forEach(b=>b.onclick=()=>{ cur.resp=cur.resp.filter(w=>w!==b.dataset.w); drawOrder(); cur.ready(); });
+}
+function doCheck(){
+  const q=cur.q; cur.checked=true;
+  const ms=Math.round(performance.now()-cur.t0);
+  const g=grade(q,cur.resp);
+  const readSec = wordsOf(q)/3.5;
+  const fast = ms/1000 < Math.max(3, readSec*0.6);
+  const rec={resp:cur.resp, score:g.score, mis:g.mis, given:g.given, right:g.right, conf:cur.conf, ms, fast};
+  if(cur.isR) S.rAnswers[q.id]=rec; else S.answers[q.id]=rec;
+  if(q.t==='mcq') view.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const i=+b.dataset.i; if(i===q.a) b.classList.add('ok'); else if(i===cur.resp) b.classList.add('no'); });
+  if(q.t==='tf') view.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; const v=b.dataset.v==='1'; if(v===q.a) b.classList.add('ok'); else if(v===cur.resp) b.classList.add('no'); });
+  if(q.t==='fill'||q.t==='num') $('#ans').disabled=true;
+  if(q.t==='match') view.querySelectorAll('.matchrow').forEach(r=>{ const i=+r.dataset.r; r.querySelector('select').disabled=true; r.classList.add(cur.resp[i]===q.items[i][1]?'ok':'no'); });
+  if(q.t==='order'){ drawOrder(); $('#seq').classList.add(g.score===1?'ok':'no'); }
+  if(q.t==='acro'){ view.querySelectorAll('.acrow input').forEach(inp=>{ const i=+inp.dataset.i; inp.disabled=true; inp.classList.add(g.okRows[i]?'ok':'no'); if(!g.okRows[i]) inp.insertAdjacentHTML('afterend',`<span class="note2">Σωστό: <b>${q.rows[i].w}</b></span>`); }); $('#ag').innerHTML=acroGrid(q,q.rows.map(r=>r.w)); }
+  if(q.t==='def'){ $('#ans').disabled=true; }
+  if(q.t==='cloze') view.querySelectorAll('.cz select').forEach(s=>{ s.disabled=true; s.classList.add(g.okB[+s.dataset.i]?'ok':'no'); });
+  view.querySelectorAll('#conf button').forEach(b=>b.disabled=true);
+  const cls = g.score===1?'ok':(g.score>0?'part':'no');
+  let head = g.score===1 ? PRAISE[Math.floor(Math.random()*PRAISE.length)] : g.score>0 ? `Σχεδόν! (${g.of?g.n:Math.round(g.score*q.items.length)} από ${g.of||q.items.length} σωστά)` : 'Όχι ακριβώς…';
+  if(g.score===1 && cur.conf===0) head+=' Και ήταν μαντεψιά! 🍀 Κοίτα την εξήγηση για να το θυμάσαι.';
+  if(g.score<1 && cur.conf===2) head+=' Ήσουν σίγουρη, οπότε αυτό αξίζει προσοχή! 👀';
+  const showRight = g.score<1 ? `<div>Το σωστό: <b>${esc(g.right)}</b></div>` : '';
+  let extra='';
+  if(q.t==='def') extra=`<div class="keys">${q.keys.map((k,i)=>`<span class="${g.hit[i]?'y':'n'}">${g.hit[i]?'✔':'✘'} ${esc(k.l)}</span>`).join('')}</div><div>📖 Ο ορισμός του βιβλίου: <b>${esc(q.model)}</b></div>`;
+  const showR = (q.t==='def'||q.t==='acro') ? '' : showRight;
+  $('#fbx').innerHTML = `<div class="fb ${cls}"><strong>${head}</strong>${showR}${extra}<div>${esc(q.ex)}</div></div>`;
+  const btn=$('#check'); btn.textContent = isLast()? (cur.isR?'Δες πώς τα πήγες →':'Συνέχεια →') : 'Επόμενη →'; btn.disabled=false; btn.id='next'; btn.onclick=next;
+  if(!cur.isR) persist();
+  btn.focus();
+}
+function isLast(){ return cur.isR ? S.rIdx===S.rList.length-1 : S.idx===S.list.length-1; }
+function next(){
+  if(cur.isR){
+    if(S.rIdx < S.rList.length-1){ S.rIdx++; const nq=byId(S.rList[S.rIdx]), pq=byId(S.rList[S.rIdx-1]); if(nq.c!==pq.c) renderFormatPick(nq.c); else renderQ(true); }
+    else finishReinforce();
+  } else {
+    if(S.idx < S.list.length-1){ S.idx++; persist(); renderQ(); window.scrollTo({top:0}); }
+    else renderSurvey();
+  }
+}
+
+/* ======================= ΜΙΚΡΟ ΕΡΩΤΗΜΑΤΟΛΟΓΙΟ ======================= */
+const SURVEY=[
+  {k:'pref',q:'Τι σε βοηθάει πιο πολύ να καταλάβεις κάτι καινούργιο;',o:[['eikona','🖼️ Να βλέπω εικόνες και σχήματα'],['zoi','🍎 Παραδείγματα από τη ζωή'],['vivlio','📖 Να το διαβάζω στο βιβλίο'],['peirama','🧪 Να κάνω πείραμα'],['akouo','👂 Να μου το εξηγεί κάποιος']]},
+  {k:'felt',q:'Πώς σου φάνηκε το κουίζ;',o:[['easy','😀 Εύκολο'],['ok','🙂 Μέτριο'],['hard','😓 Δύσκολο']]},
+  {k:'hardest',q:'Ποιο κομμάτι σου φάνηκε πιο δύσκολο;',o:Object.keys(CONCEPTS).map(k=>[k,CONCEPTS[k].name]).concat([['none','Κανένα!']])}
+];
+function renderSurvey(){
+  brandColor(); S.phase='survey'; persist();
+  view.innerHTML = `<div class="card stack"><h2>Τελείωσες! 🎉 Τρεις γρήγορες ερωτήσεις για σένα</h2><p class="hintline">Εδώ δεν υπάρχει σωστό ή λάθος.</p>
+    ${SURVEY.map(s=>`<div><p style="font-weight:700">${s.q}</p><div class="opts">${s.o.map(o=>`<button class="opt" data-k="${s.k}" data-v="${o[0]}"><span>${o[1]}</span></button>`).join('')}</div></div>`).join('')}
+    <div class="row end"><button class="btn" id="sdone" disabled>Δες τα αποτελέσματα →</button></div></div>`;
+  view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.survey[b.dataset.k]=b.dataset.v; view.querySelectorAll(`.opt[data-k="${b.dataset.k}"]`).forEach(x=>x.classList.toggle('sel',x===b)); $('#sdone').disabled = SURVEY.some(s=>!S.survey[s.k]); });
+  $('#sdone').onclick=finishQuiz;
+  window.scrollTo({top:0});
+}
+
+/* ======================= ΑΝΑΛΥΣΗ ======================= */
+function analyse(list, answers){
+  const per={}; Object.keys(CONCEPTS).forEach(k=>per[k]={got:0,total:0});
+  const mis={}; const wrong=[];
+  list.forEach(id=>{ const q=byId(id), a=answers[id]; if(!a) return; per[q.c].total++; per[q.c].got+=a.score;
+    if(a.score<1){ wrong.push({id, c:q.c, q:q.q, given:a.given, right:a.right, conf:a.conf}); if(a.mis){ (mis[a.mis]=mis[a.mis]||{text:a.mis,c:q.c,n:0,ex:q.ex,sure:false}).n++; if(a.conf===2) mis[a.mis].sure=true; } } });
+  let got=0,total=0; Object.values(per).forEach(p=>{ got+=p.got; total+=p.total; });
+  return {per, got, total, pct: total? Math.round(got/total*100):0, mis:Object.values(mis), wrong};
+}
+function profile(list, answers){
+  const modes={}; Object.keys(MODES).forEach(k=>modes[k]={got:0,total:0});
+  const types={}; Object.keys(TYPES).forEach(k=>types[k]={got:0,total:0});
+  const box={know:[],fragile:[],belief:[],gap:[]};
+  const conf={0:{n:0,ok:0},1:{n:0,ok:0},2:{n:0,ok:0}};
+  const times=[]; const rushed=[];
+  list.forEach(id=>{ const q=byId(id), a=answers[id]; if(!a) return;
+    q.m.forEach(m=>{ modes[m].total++; modes[m].got+=a.score; });
+    const tg=typeGroup(q.t); types[tg].total++; types[tg].got+=a.score;
+    const ok=a.score===1; const sure=a.conf===2;
+    const item={id, c:q.c, q:q.q};
+    if(ok&&sure) box.know.push(item); else if(ok) box.fragile.push(item); else if(sure) box.belief.push(item); else box.gap.push(item);
+    if(a.conf!=null){ conf[a.conf].n++; if(ok) conf[a.conf].ok++; }
+    times.push(a.ms/1000);
+    if(!ok && a.fast) rushed.push(item);
+  });
+  times.sort((x,y)=>x-y);
+  const median = times.length? times[Math.floor(times.length/2)] : 0;
+  const mp={}; Object.keys(modes).forEach(k=>mp[k]=pct(modes[k].got,modes[k].total));
+  const tp={}; Object.keys(types).forEach(k=>tp[k]=pct(types[k].got,types[k].total));
+  return {modes, types, mp, tp, box, conf, median:Math.round(median), rushed};
+}
+function formatStats(log){
+  const fs={}; Object.keys(FORMATS).forEach(k=>fs[k]={chosen:0,got:0,total:0});
+  log.forEach(l=>{ if(!l.first) return; fs[l.first].chosen++; fs[l.first].got+=l.got; fs[l.first].total+=l.total; });
+  return fs;
+}
+function recommendations(P, A, survey, fs){
+  const R=[]; const mp=P.mp; const name=S.name;
+  const valid=Object.keys(mp).filter(k=>mp[k]!==null && P.modes[k].total>=3);
+  if(valid.length>=2){
+    const best=valid.reduce((a,b)=>mp[a]>=mp[b]?a:b), worst=valid.reduce((a,b)=>mp[a]<=mp[b]?a:b);
+    if(mp[best]-mp[worst]>=20){
+      const adv={
+        vivlio:'Θυμάται καλά τους ορισμούς του βιβλίου. Στα σχεδιαγράμματα κρατήστε τον ορισμό όπως είναι στο βιβλίο, με επισήμανση στη λέξη-κλειδί.',
+        eikona:'Τα πάει καλύτερα όταν βλέπει εικόνα. Ξεκινήστε κάθε θεωρία με σχήμα (μόρια σε κουτάκια, σωλήνας, ζυγός) και μετά το κείμενο.',
+        praxi:'Τα πάει καλά με τους αριθμούς. Δώστε της «λυμένο παράδειγμα» και μετά παρόμοιες ασκήσεις: εκεί δένει η θεωρία.',
+        skepsi:'Καταλαβαίνει τις ιδέες μέσα από παραδείγματα. Συνδέστε κάθε έννοια με κάτι καθημερινό (μπανιέρα, τραμπάλα, κουβάς με άμμο).'};
+      const fix={
+        vivlio:'Οι ορισμοί και οι λέξεις του βιβλίου είναι το πιο αδύνατο σημείο. Φτιάξτε κάρτες «λέξη ↔ ορισμός» και ζητήστε της να τους λέει με δικά της λόγια, μετά όπως το βιβλίο.',
+        eikona:'Δυσκολεύεται να «διαβάσει» σχήματα (σωλήνα, ζυγό, μόρια). Δουλέψτε την εικόνα βήμα-βήμα: «τι δείχνει; πού είναι η στάθμη; προς τα πού γέρνει;».',
+        praxi:'Οι πράξεις τη δυσκολεύουν. Γράψτε τον κανόνα σε ένα κουτί («τελική − αρχική», «× 1000 / ÷ 1000») και κάντε 3-4 λυμένα παραδείγματα πριν τις ασκήσεις.',
+        skepsi:'Θυμάται τη θεωρία αλλά δυσκολεύεται να την εφαρμόσει. Μετά από κάθε ορισμό ρωτήστε «πού το βλέπουμε στο σπίτι;» και «γιατί;».'};
+      R.push({t:`Τα πάει καλύτερα στο «${MODES[best].name}» (${mp[best]}%)`, d:adv[best]});
+      R.push({t:`Θέλει δουλειά στο «${MODES[worst].name}» (${mp[worst]}%)`, d:fix[worst]});
+    } else {
+      R.push({t:'Δεν φαίνεται μεγάλη διαφορά ανάμεσα στους τρόπους σκέψης', d:'Τα πάει περίπου το ίδιο με εικόνες, ορισμούς, πράξεις και παραδείγματα. Συνεχίστε με μείξη τρόπων.'});
+    }
+  }
+  const tp=P.tp;
+  if(tp.anag!==null && tp.anak!==null && tp.anag - tp.anak >= 20) R.push({t:'Αναγνωρίζει τη σωστή απάντηση, αλλά δυσκολεύεται να τη θυμηθεί μόνη της', d:`Διαλέγοντας από επιλογές: ${tp.anag}% · γράφοντας μόνη της: ${tp.anak}%. Χρειάζεται εξάσκηση ανάκλησης: κενά, κάρτες, να εξηγεί φωναχτά χωρίς να κοιτάει.`});
+  if(P.box.belief.length>=2) R.push({t:`${P.box.belief.length} λάθος πεποιθήσεις που πιστεύει σίγουρα`, d:'Αυτές δεν φεύγουν με απλή επανάληψη. Θέλουν συζήτηση και ένα μικρό πείραμα που δείχνει ότι δεν ισχύουν (π.χ. σύριγγα με νερό, 1 kg βαμβάκι και 1 kg σίδερο).'});
+  if(P.box.fragile.length>=3) R.push({t:`${P.box.fragile.length} σωστές απαντήσεις χωρίς σιγουριά`, d:'Τα ξέρει «περίπου». Μια γρήγορη επανάληψη σε αυτά θα τα κάνει σταθερά.'});
+  const c2=P.conf[2]; if(c2.n>=5 && c2.ok/c2.n<0.7) R.push({t:'Είναι συχνά σίγουρη ενώ κάνει λάθος', d:`Όταν λέει «σίγουρη», έχει δίκιο στο ${pct(c2.ok,c2.n)}%. Ζητήστε της να ελέγχει την απάντηση πριν προχωρήσει.`});
+  const c0=P.conf[0]; if(c0.n>=4 && c0.ok/c0.n>=0.6) R.push({t:'Ξέρει περισσότερα από όσα πιστεύει', d:`Όταν λέει «μαντεύω», βρίσκει σωστά το ${pct(c0.ok,c0.n)}%. Χρειάζεται ενθάρρυνση να εμπιστεύεται τον εαυτό της.`});
+  if(P.rushed.length>=3) R.push({t:`${P.rushed.length} βιαστικά λάθη`, d:'Απάντησε πιο γρήγορα απ\' όσο χρειάζεται για να διαβαστεί η ερώτηση. Να διαβάζει την ερώτηση δύο φορές και να υπογραμμίζει τη λέξη-κλειδί.'});
+  if(survey && survey.pref){
+    const map={eikona:'eikona',zoi:'skepsi',vivlio:'vivlio'};
+    const m=map[survey.pref];
+    if(m && mp[m]!==null){ const others=valid.filter(k=>k!==m).map(k=>mp[k]); const avg=others.length?others.reduce((a,b)=>a+b,0)/others.length:mp[m];
+      if(mp[m] < avg-15) R.push({t:'Αυτό που λέει ότι τη βοηθάει δεν είναι αυτό που της βγαίνει καλύτερα', d:`Είπε ότι τη βοηθούν «${SURVEY[0].o.find(o=>o[0]===survey.pref)[1].slice(2).trim()}», αλλά εκεί πήγε ${mp[m]}%. Κρατήστε αυτό που της αρέσει για να ξεκινάτε, αλλά ελέγχετε με τον τρόπο που της βγαίνει.`});
+    }
+    if(survey.pref==='peirama') R.push({t:'Της αρέσουν τα πειράματα', d:'Κάντε στο σπίτι τα πειράματα του Τετραδίου (βύθιση με ποτήρι, ζυγός με κρεμάστρα, σύριγγα): δένουν τη θεωρία.'});
+  }
+  if(fs){ const used=Object.keys(fs).filter(k=>fs[k].total>0);
+    if(used.length){ const b=used.reduce((a,c)=>(fs[a].got/fs[a].total)>=(fs[c].got/fs[c].total)?a:c);
+      R.push({t:`Στην ενίσχυση πήγε καλύτερα μετά από εξήγηση «${FORMATS[b].name}»`, d:used.map(k=>`${FORMATS[k].icon} ${FORMATS[k].name}: ${pct(fs[k].got,fs[k].total)}% (${fs[k].chosen} φορές)`).join(' · ')+'. Με λίγες προσπάθειες είναι ένδειξη, όχι σίγουρο συμπέρασμα.'}); } }
+  return R;
+}
+
+/* ======================= ΑΠΟΤΕΛΕΣΜΑΤΑ ======================= */
+function level(p){ return p>=80?['Το ξέρει! ⭐','b-good']: p>=50?['Σχεδόν · θέλει λίγη επανάληψη','b-mid']:['Θέλει ενίσχυση','b-bad']; }
+function sectionScores(list, answers){ const r={}; list.forEach(id=>{ const q=byId(id), a=answers[id]; if(!q.sec||!a) return; r[q.sec]=r[q.sec]||{got:0,total:0}; r[q.sec].total++; r[q.sec].got+=a.score; }); Object.values(r).forEach(v=>v.got=+v.got.toFixed(2)); return r; }
+function finishQuiz(){
+  S.phase='results'; persist(); S.secs = S.mode==='prova' ? sectionScores(S.list,S.answers) : null;
+  S.result=analyse(S.list,S.answers); S.prof=profile(S.list,S.answers);
+  histAdd();
+  saveAttempt();
+  renderResults();
+}
+function renderResults(){
+  brandColor();
+  const A=S.result;
+  const weak=Object.keys(CONCEPTS).filter(k=>{ const p=pct(A.per[k].got,A.per[k].total); return p!==null && p<80; });
+  const msg = A.pct>=90?'Φανταστικά! Είσαι έτοιμη για το διαγώνισμα! 🎉': A.pct>=70?'Πολύ καλά! Λίγη εξάσκηση ακόμα και τα έχεις όλα! 💪': A.pct>=50?'Καλή αρχή! Πάμε να δυναμώσουμε τα δύσκολα σημεία. 🙂':'Δεν πειράζει! Τώρα ξέρουμε τι να δουλέψουμε. Πάμε μαζί! 🌱';
+  const bars=Object.keys(CONCEPTS).map(k=>{ const p=A.per[k], v=pct(p.got,p.total); if(v===null) return ''; const L=level(v); return `<div class="bar"><span class="name">${CONCEPTS[k].name}<span class="badge ${L[1]}">${L[0]}</span></span><span class="val">${fmtNum(+p.got.toFixed(1))} / ${p.total}</span><div class="track"><i style="width:${Math.max(4,v)}%;background:${CONCEPTS[k].col}"></i></div></div>`; }).join('');
+  const misHtml = A.mis.length ? A.mis.map(m=>`<div class="m" style="border-left-color:${CONCEPTS[m.c].col}"><span class="pill" style="background:${CONCEPTS[m.c].soft};color:${CONCEPTS[m.c].col}">${CONCEPTS[m.c].name}</span><div style="margin-top:6px">🤔 ${esc(m.text)}</div><div style="margin-top:4px"><span class="yes">✅ Το σωστό:</span> ${esc(m.ex)}</div></div>`).join('') : '<p>Δεν βρέθηκε κανένα μπέρδεμα. Μπράβο!</p>';
+  const wrongHtml = A.wrong.length ? A.wrong.map(w=>`<div class="r"><div>${esc(w.q.replace('___','…'))}</div><div>Έγραψες: <em>${esc(w.given)}</em> · Σωστό: <b>${esc(w.right)}</b></div></div>`).join('') : '<p>Καμία λάθος απάντηση!</p>';
+  view.innerHTML = `<div class="stack">
+    <div class="card"><div class="score"><div class="ring" style="--p:${A.pct}"><div>${A.pct}%<small>${fmtNum(+A.got.toFixed(1))} / ${A.total}</small></div></div>
+      <div style="flex:1;min-width:200px"><h1>${S.name?esc(S.name)+', τ':'Τ'}ελείωσες!</h1><p>${msg}</p></div></div></div>
+    ${historyCard(S.mode,true)}
+    ${S.secs?`<div class="card stack"><h2>📝 Πώς πήγες σε κάθε θέμα της πρόβας</h2><div class="bars">${Object.keys(SECTIONS).filter(k=>S.secs[k]).map(k=>{ const p=S.secs[k], v=pct(p.got,p.total), L=level(v); return `<div class="bar"><span class="name">${SECTIONS[k].name}<span class="badge ${L[1]}">${L[0]}</span></span><span class="val">${fmtNum(+p.got.toFixed(1))} / ${p.total}</span><div class="track"><i style="width:${Math.max(4,v)}%;background:#ff6b4a"></i></div></div>`; }).join('')}</div></div>`:''}
+    <div class="card stack"><h2>Τι έχεις καταλάβει ανά ενότητα</h2><div class="bars">${bars}</div></div>
+    <div class="card stack"><h2>Τι σε μπέρδεψε</h2><p class="hintline">Σε κάθε κουτάκι: τι μπερδεύτηκε και ποιο είναι το σωστό.</p><div class="mis">${misHtml}</div></div>
+    <div class="card stack"><h2>${weak.length?'Πάμε να το ενισχύσουμε! 💪':'Θέλεις κι άλλη εξάσκηση;'}</h2>
+      <p>${weak.length?`Για κάθε κομμάτι θα διαλέξεις <b>πώς θέλεις να σου το εξηγήσουμε</b> (με εικόνα, με παράδειγμα ή όπως το βιβλίο) και μετά θα απαντήσεις σε νέες ερωτήσεις: <b>${weak.map(k=>CONCEPTS[k].name).join(', ')}</b>.`:'Τα πήγες τέλεια παντού! Μπορείς να κάνεις εξάσκηση σε όλες τις ενότητες με νέες ερωτήσεις.'}</p>
+      <div class="row"><button class="btn" id="reinf">${weak.length?'Ξεκίνα την ενίσχυση →':'Εξάσκηση σε όλα →'}</button><button class="btn ghost" id="again">Ξανά το κουίζ</button></div></div>
+    <details class="card"><summary>Όλες οι λάθος απαντήσεις (${A.wrong.length})</summary><div class="review" style="margin-top:10px">${wrongHtml}</div></details>
+    ${profileCard()}
+  </div>`;
+  $('#reinf').onclick=()=>startReinforce(weak.length?weak:Object.keys(CONCEPTS));
+  $('#again').onclick=()=>{ S.phase='start'; renderStart(); window.scrollTo({top:0}); };
+  bindProfileCard();
+  window.scrollTo({top:0});
+  renderParent();
+}
+function profileCard(){
+  const P=S.prof, A=S.result; const fs=formatStats(S.rLog);
+  const R=recommendations(P,A,S.survey,S.rLog.length?fs:null);
+  const modeBars=Object.keys(MODES).map(k=>{ const v=P.mp[k]; if(v===null) return ''; return `<div class="bar"><span class="name">${MODES[k].icon} ${MODES[k].name} <span class="note2">· ${MODES[k].desc}</span></span><span class="val">${v}% (${P.modes[k].total} ερ.)</span><div class="track"><i style="width:${Math.max(4,v)}%;background:#2d7ff9"></i></div></div>`; }).join('');
+  const typeRows=Object.keys(TYPES).map(k=>P.tp[k]===null?'':`<span>${TYPES[k].name}</span><span>${P.tp[k]}% (${P.types[k].total})</span>`).join('');
+  const li=arr=>arr.length?`<ul>${arr.slice(0,6).map(i=>`<li>${esc(i.q.replace('___','…')).slice(0,70)}${i.q.length>70?'…':''}</li>`).join('')}${arr.length>6?`<li>και ${arr.length-6} ακόμα</li>`:''}</ul>`:'';
+  const c=P.conf;
+  const surveyTxt = S.survey&&S.survey.pref ? SURVEY.map(s=>`<span>${s.q}</span><span>${(s.o.find(o=>o[0]===S.survey[s.k])||['',''])[1]}</span>`).join('') : '';
+  const fsTxt = S.rLog.length ? Object.keys(FORMATS).filter(k=>fs[k].chosen).map(k=>`<span>${FORMATS[k].icon} ${FORMATS[k].name}</span><span>διάλεξε ${fs[k].chosen} φορές · ${pct(fs[k].got,fs[k].total)}% μετά</span>`).join('') : '';
+  return `<details class="card pcard" id="pcard"><summary>Για τον γονιό / δάσκαλο: πώς μαθαίνει η ${esc(S.name)} 🧭</summary><div class="stack" style="margin-top:12px">
+    <div><h3>Προτάσεις για τη θεωρία</h3><ul class="recs" style="margin-top:8px">${R.map(r=>`<li><b>${esc(r.t)}</b>${esc(r.d)}</li>`).join('')}</ul></div>
+    <div><h3>Τρόποι σκέψης</h3><p class="note2">Το ποσοστό σωστών, ανάλογα με το τι ζητάει η ερώτηση.</p><div class="bars">${modeBars}</div></div>
+    <div><h3>Πώς απαντάει</h3><div class="kv" style="margin-top:6px">${typeRows}</div></div>
+    <div><h3>Σιγουριά και γνώση</h3><div class="grid4" style="margin-top:8px">
+      <div class="box4 g"><div class="n">${P.box.know.length}</div><div class="t">✅ Το ξέρει</div><div class="d">σωστό και σίγουρη</div></div>
+      <div class="box4 y"><div class="n">${P.box.fragile.length}</div><div class="t">🍀 Εύθραυστο</div><div class="d">σωστό, αλλά όχι σίγουρη</div>${li(P.box.fragile)}</div>
+      <div class="box4 r"><div class="n">${P.box.belief.length}</div><div class="t">⚠️ Λάθος πεποίθηση</div><div class="d">λάθος, αλλά σίγουρη: θέλει συζήτηση</div>${li(P.box.belief)}</div>
+      <div class="box4 e"><div class="n">${P.box.gap.length}</div><div class="t">🕳️ Κενό</div><div class="d">λάθος και δεν ήξερε</div>${li(P.box.gap)}</div></div>
+      <div class="kv" style="margin-top:10px"><span>Όταν λέει «σίγουρη», έχει δίκιο</span><span>${c[2].n?pct(c[2].ok,c[2].n)+'%':'—'} (${c[2].n})</span><span>Όταν λέει «νομίζω»</span><span>${c[1].n?pct(c[1].ok,c[1].n)+'%':'—'} (${c[1].n})</span><span>Όταν λέει «μαντεύω»</span><span>${c[0].n?pct(c[0].ok,c[0].n)+'%':'—'} (${c[0].n})</span></div></div>
+    <div><h3>Ρυθμός</h3><div class="kv" style="margin-top:6px"><span>Τυπικός χρόνος ανά ερώτηση</span><span>${P.median} δευτ.</span><span>Βιαστικά λάθη</span><span>${P.rushed.length}</span></div>${li(P.rushed)}</div>
+    ${surveyTxt?`<div><h3>Τι είπε η ίδια</h3><div class="kv" style="margin-top:6px">${surveyTxt}</div></div>`:''}
+    ${fsTxt?`<div><h3>Ποια εξήγηση διάλεξε στην ενίσχυση</h3><div class="kv" style="margin-top:6px">${fsTxt}</div></div>`:''}
+    <p class="note2">Οι ενδείξεις γίνονται πιο σίγουρες μετά από 2-3 προσπάθειες. Όλα αποθηκεύονται στο ιστορικό.</p>
+    <div class="row"><button class="btn ghost" id="copy">Αντιγραφή αναφοράς</button><span class="toast" id="copied"></span></div>
+    <textarea id="reptxt" readonly hidden style="width:100%;min-height:160px;font:14px var(--f-body);border:1px solid var(--line);border-radius:10px;padding:8px"></textarea>
+  </div></details>`;
+}
+function bindProfileCard(){ const b=$('#copy'); if(b) b.onclick=copyReport; }
+function reportText(){
+  const A=S.result, P=S.prof; const d=new Date(S.started||Date.now());
+  const fs=formatStats(S.rLog); const R=recommendations(P,A,S.survey,S.rLog.length?fs:null);
+  let t=`${S.mode==='prova'?'Πρόβα διαγωνίσματος':'Κουίζ'} «Υλικά σώματα» · ${S.name} · ${d.toLocaleDateString('el-GR')} ${d.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'})}\nΣκορ: ${fmtNum(+A.got.toFixed(1))}/${A.total} (${A.pct}%)\n\nΑνά ενότητα:\n`;
+  Object.keys(CONCEPTS).forEach(k=>{ const p=A.per[k], v=pct(p.got,p.total); if(v!==null) t+=`- ${CONCEPTS[k].name}: ${fmtNum(+p.got.toFixed(1))}/${p.total} (${v}%) · ${level(v)[0]}\n`; });
+  if(S.secs) t+=`\nΑνά θέμα πρόβας:\n`+Object.keys(SECTIONS).filter(k=>S.secs[k]).map(k=>`- ${SECTIONS[k].name}: ${fmtNum(S.secs[k].got)}/${S.secs[k].total} (${pct(S.secs[k].got,S.secs[k].total)}%)`).join('\n')+'\n';
+  t+=`\nΤρόποι σκέψης:\n`+Object.keys(MODES).map(k=>P.mp[k]===null?'':`- ${MODES[k].name}: ${P.mp[k]}%`).filter(Boolean).join('\n');
+  t+=`\n\nΠώς απαντάει:\n`+Object.keys(TYPES).map(k=>P.tp[k]===null?'':`- ${TYPES[k].name}: ${P.tp[k]}%`).filter(Boolean).join('\n');
+  t+=`\n\nΣιγουριά: το ξέρει ${P.box.know.length} · εύθραυστο ${P.box.fragile.length} · λάθος πεποίθηση ${P.box.belief.length} · κενό ${P.box.gap.length}`;
+  t+=`\nΤυπικός χρόνος: ${P.median} δευτ. · βιαστικά λάθη: ${P.rushed.length}`;
+  if(S.survey&&S.survey.pref) t+=`\nΗ ίδια: `+SURVEY.map(s=>`${s.q} ${(s.o.find(o=>o[0]===S.survey[s.k])||['',''])[1]}`).join(' | ');
+  t+=`\n\nΤι την μπέρδεψε:\n`+(A.mis.length?A.mis.map(m=>`- [${CONCEPTS[m.c].name}]${m.sure?' (σίγουρη!)':''} ${m.text}`).join('\n'):'- τίποτα');
+  t+=`\n\nΠροτάσεις:\n`+R.map(r=>`- ${r.t}: ${r.d}`).join('\n');
+  t+=`\n\nΛάθος απαντήσεις:\n`+(A.wrong.length?A.wrong.map(w=>`- ${w.q.replace('___','…')} | έγραψε: ${w.given} | σωστό: ${w.right} | σιγουριά: ${CONF[w.conf]?CONF[w.conf].name:'—'}`).join('\n'):'- καμία');
+  if(S.reinf) t+=`\n\nΕνίσχυση: ${S.reinf.got}/${S.reinf.total} (${S.reinf.pct}%) · εξηγήσεις: `+S.rLog.map(l=>`${CONCEPTS[l.c].name} → ${FORMATS[l.first].name}${l.viewed.length>1?' (+'+(l.viewed.length-1)+')':''}: ${l.got}/${l.total}`).join(' · ');
+  return t;
+}
+function copyReport(){
+  const t=reportText(); const ta=$('#reptxt'); ta.value=t;
+  try{ navigator.clipboard.writeText(t).then(()=>{ $('#copied').textContent='Αντιγράφηκε ✓'; },()=>{ ta.hidden=false; ta.select(); $('#copied').textContent='Επιλέξτε το κείμενο και αντιγράψτε το'; }); }
+  catch(e){ ta.hidden=false; ta.select(); }
+}
+
+/* ======================= ΕΝΙΣΧΥΣΗ ======================= */
+function startReinforce(concepts){
+  S.reinfConcepts=concepts; S.rList=[]; S.rAnswers={}; S.rIdx=0; S.rLog=[];
+  Object.keys(CONCEPTS).forEach(c=>{ if(concepts.includes(c)) S.rList=S.rList.concat(shuffle(EXTRA.filter(q=>q.c===c)).slice(0,3).map(q=>q.id)); });
+  seedList(S.rList);
+  S.phase='reinforce';
+  renderFormatPick(byId(S.rList[0]).c);
+}
+function renderFormatPick(c){
+  setColor(c);
+  view.innerHTML = `<div class="card stack">
+    <div class="prog"><i style="width:${(S.rIdx/S.rList.length)*100}%"></i></div>
+    <span class="tag" style="align-self:flex-start">Ενίσχυση · ${CONCEPTS[c].name}</span>
+    <h2>Πώς θέλεις να σου το εξηγήσουμε;</h2>
+    <div class="fmt">${Object.keys(FORMATS).map(k=>`<button data-f="${k}"><span>${FORMATS[k].icon}</span>${FORMATS[k].name}</button>`).join('')}</div></div>`;
+  view.querySelectorAll('.fmt button').forEach(b=>b.onclick=()=>{ S.rLog.push({c, first:b.dataset.f, viewed:[b.dataset.f], got:0, total:0}); renderTheory(c,b.dataset.f); });
+  window.scrollTo({top:0});
+}
+function renderTheory(c,f){
+  const log=S.rLog[S.rLog.length-1]; if(!log.viewed.includes(f)) log.viewed.push(f);
+  const n=S.rList.filter(id=>byId(id).c===c).length;
+  view.innerHTML = `<div class="card stack">
+    <div class="prog"><i style="width:${(S.rIdx/S.rList.length)*100}%"></i></div>
+    <span class="tag" style="align-self:flex-start">Ενίσχυση · ${CONCEPTS[c].name}</span>
+    <div class="theory"><h3>Θυμήσου 💡 ${FORMATS[f].icon} ${FORMATS[f].name}</h3>${TH[c][f]()}</div>
+    <div><p class="hintline" style="margin-bottom:6px">Θέλεις να το δεις κι αλλιώς;</p><div class="tabs">${Object.keys(FORMATS).map(k=>`<button data-f="${k}" aria-pressed="${k===f}">${FORMATS[k].icon} ${FORMATS[k].name}</button>`).join('')}</div></div>
+    <p>Όταν είσαι έτοιμη, θα απαντήσεις σε ${n} νέες ερωτήσεις.</p>
+    <div class="row end"><button class="btn c" id="tgo">Το κατάλαβα, πάμε! →</button></div></div>`;
+  view.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>renderTheory(c,b.dataset.f));
+  $('#tgo').onclick=()=>renderQ(true);
+}
+function finishReinforce(){
+  const A=analyse(S.rList,S.rAnswers);
+  S.rLog.forEach(l=>{ const p=A.per[l.c]; l.got=+p.got.toFixed(2); l.total=p.total; });
+  const before=S.result;
+  S.reinf={got:+A.got.toFixed(1),total:A.total,pct:A.pct}; histReinf(A.pct);
+  S.rProf=profile(S.rList,S.rAnswers);
+  saveReinforce(A);
+  const rows=S.reinfConcepts.map(k=>{ const b=pct(before.per[k].got,before.per[k].total), a=pct(A.per[k].got,A.per[k].total); if(a===null) return ''; const up=a>b; const lg=S.rLog.find(l=>l.c===k); return `<div class="bar"><span class="name">${CONCEPTS[k].name} <span class="note2">${lg?FORMATS[lg.first].icon:''}</span></span><span class="val cmp">πριν ${b}% → τώρα <b style="color:${a>=80?'#1f9e5a':(up?'#1f9e5a':'#d93a2b')}">${a}%</b> ${up?'⬆':''}</span><div class="track"><i style="width:${Math.max(4,a)}%;background:${CONCEPTS[k].col}"></i></div></div>`; }).join('');
+  const still=S.reinfConcepts.filter(k=>{ const a=pct(A.per[k].got,A.per[k].total); return a!==null && a<80; });
+  brandColor();
+  view.innerHTML = `<div class="stack"><div class="card stack">
+    <h1>${A.pct>=80?'Τα κατάφερες! 🌟':'Μπράβο για την προσπάθεια! 👏'}</h1>
+    <p>Στην ενίσχυση απάντησες σωστά <b>${fmtNum(+A.got.toFixed(1))} από ${A.total}</b>.</p>
+    <div class="bars">${rows}</div>
+    ${still.length?`<p>Αυτά θέλουν ακόμα λίγη δουλειά: <b>${still.map(k=>CONCEPTS[k].name).join(', ')}</b>. Δοκίμασε πάλι, και διάλεξε άλλον τρόπο εξήγησης!</p>`:'<p>Όλες οι ενότητες της ενίσχυσης είναι τώρα σε πολύ καλό επίπεδο!</p>'}
+    <div class="row">${still.length?'<button class="btn" id="again2">Ξανά ενίσχυση σε αυτά</button>':''}<button class="btn ghost" id="back">Πίσω στα αποτελέσματα</button><button class="btn ghost" id="restart">Νέο κουίζ</button></div>
+  </div></div>`;
+  if($('#again2')) $('#again2').onclick=()=>startReinforce(still);
+  $('#back').onclick=()=>renderResults();
+  $('#restart').onclick=()=>{ S.phase='start'; renderStart(); };
+  window.scrollTo({top:0});
+}
+
+
+/* ======================= ΕΚΤΥΠΩΣΗ ======================= */
+function renderPrint(){
+  brandColor();
+  const list = S.mode==='prova' ? provaList() : shuffleWithinBlocks();
+  S.seeds={}; QC={}; seedList(list);
+  const L=['α','β','γ','δ']; let n=0, body='', ans='', lastSec=null, lastC=null;
+  const line=w=>`<span class="pl" style="min-width:${w||140}px"></span>`;
+  list.forEach(id=>{ const q=byId(id); n++;
+    const head = S.mode==='prova' ? (q.sec!==lastSec ? `<h3 class="psec">${SECTIONS[q.sec].name}</h3>`:'') : (q.c!==lastC ? `<h3 class="psec">${CONCEPTS[q.c].name}</h3>`:'');
+    lastSec=q.sec; lastC=q.c;
+    let b='', a='';
+    const qt = esc(q.q).replace('___',line(120));
+    if(q.t==='tf'){ b=`<div class="pq tfq"><span><b>${n}.</b> ${qt}</span><span class="sl">Σ &nbsp; Λ</span></div>`; a=q.a?'Σ':'Λ'; }
+    else if(q.t==='mcq'){ b=`<div class="pq"><b>${n}.</b> ${qt}${q.fig?q.fig():''}<div class="popts">${q.opts.map((o,i)=>`<span>${L[i]}) ${esc(o)}</span>`).join('')}</div></div>`; a=`${L[q.a]}) ${q.opts[q.a]}`; }
+    else if(q.t==='fill'){ b=`<div class="pq"><b>${n}.</b> ${qt}</div>`; a=q.show; }
+    else if(q.t==='num'){ b=`<div class="pq"><b>${n}.</b> ${qt}${q.fig?q.fig():''}<div>Απάντηση: ${line(90)} ${esc(q.unit)}</div></div>`; a=fmtNum(q.a)+' '+q.unit+(q.ex?` (${q.ex})`:''); }
+    else if(q.t==='match'){ b=`<div class="pq"><b>${n}.</b> ${qt} <span class="note2">Διάλεξε από: ${q.choices.map(esc).join(' · ')}</span><table class="mini">${q.items.map(it=>`<tr><td>${esc(it[0])}</td><td style="width:60%"></td></tr>`).join('')}</table></div>`; a=q.items.map(it=>`${it[0]} → ${it[1]}`).join(' · '); }
+    else if(q.t==='order'){ b=`<div class="pq"><b>${n}.</b> ${qt}<div class="note2" style="margin:4px 0">${shuffle(q.items).map(esc).join(' · ')}</div>${line(420)}</div>`; a=q.items.join(' → '); }
+    else if(q.t==='acro'){ b=`<div class="pq"><b>${n}.</b> ${qt}${acroGrid(q)}<ol class="pclues">${q.rows.map(r=>`<li>${esc(r.clue)} <span class="note2">(${r.w.length})</span></li>`).join('')}</ol></div>`; a=q.rows.map(r=>r.w).join(', ')+' → <b>'+q.hidden+'</b>'; }
+    else if(q.t==='def'){ b=`<div class="pq"><b>${n}.</b> ${qt}<div class="plines"><i></i><i></i></div></div>`; a=q.model; }
+    else if(q.t==='cloze'){ b=`<div class="pq"><b>${n}.</b> ${qt}<div class="pbank">${shuffle(q.bank).map(esc).join(' · ')}</div><div>${esc(q.text).replace(/\[\[(\d+)\]\]/g,(m,i)=>`(${+i+1}) ${line(110)}`)}</div></div>`; a=clozeRight(q); }
+    body+=head+b; ans+=`<li>${a}</li>`;
+  });
+  const d=new Date();
+  view.innerHTML=`<div class="noprint card stack" style="margin-bottom:12px"><h2>🖨️ ${S.mode==='prova'?'Πρόβα διαγωνίσματος':'Διαγνωστικό'} για εκτύπωση</h2><p>Κάθε φορά που πατάς «Νέο», βγαίνουν άλλες ερωτήσεις και άλλα νούμερα. Οι απαντήσεις είναι στην τελευταία σελίδα.</p>
+    <div class="row"><button class="btn" id="pp">Εκτύπωση</button><button class="btn ghost" id="pn">🔀 Νέο διαγώνισμα</button><button class="btn ghost" id="pb">← Πίσω</button></div><p class="hintline">Αν δεν ανοίξει η εκτύπωση, πάτησε Ctrl+P (ή ⌘+P).</p></div>
+    <div class="paper"><div class="phead"><b>Φυσικά Ε΄ · Υλικά σώματα · ${S.mode==='prova'?'Διαγώνισμα':'Επανάληψη'}</b><span>Όνομα: ${esc(S.name)} &nbsp; Ημερομηνία: ${d.toLocaleDateString('el-GR')}</span></div>${body}
+    <div class="pans"><h3 class="psec">Απαντήσεις (για τον γονιό)</h3><ol>${ans}</ol></div></div>`;
+  $('#pp').onclick=()=>{ try{ window.print(); }catch(e){} };
+  $('#pn').onclick=renderPrint; $('#pb').onclick=()=>{ renderStart(); };
+  window.scrollTo({top:0});
+}
+/* ======================= ΑΠΟΘΗΚΕΥΣΗ (db) ======================= */
+const saveEl=$('#savestate');
+function compactAnalysis(A){
+  const per={}; Object.keys(A.per).forEach(k=>{ if(A.per[k].total) per[k]={got:+A.per[k].got.toFixed(2),total:A.per[k].total}; });
+  return {per, got:+A.got.toFixed(2), total:A.total, pct:A.pct, misconceptions:A.mis.map(m=>({concept:m.c,text:m.text,sure:!!m.sure})), wrong:A.wrong.map(w=>({id:w.id,concept:w.c,question:w.q,given:w.given,right:w.right,conf:w.conf}))};
+}
+function compactProfile(P){
+  return {modes:P.mp, types:P.tp, boxes:{know:P.box.know.map(i=>i.id),fragile:P.box.fragile.map(i=>i.id),belief:P.box.belief.map(i=>i.id),gap:P.box.gap.map(i=>i.id)}, confidence:{sure:P.conf[2],think:P.conf[1],guess:P.conf[0]}, medianSec:P.median, rushed:P.rushed.map(i=>i.id)};
+}
+function rawAnswers(list, ans){ return list.filter(id=>ans[id]).map(id=>{ const q=byId(id), a=ans[id]; return {id, c:q.c, modes:q.m, type:q.t, score:+a.score.toFixed(2), conf:a.conf, sec:Math.round(a.ms/100)/10, fast:!!a.fast}; }); }
+async function saveAttempt(){
+  if(!db){ saveEl.textContent=''; return; }
+  saveEl.textContent='Αποθήκευση…';
+  try{
+    const ref=db.collection('attempts').doc();
+    const recs=recommendations(S.prof,S.result,S.survey,null).map(r=>r.t+': '+r.d);
+    await ref.set(Object.assign({name:S.name, startedAt:new Date(S.started).toISOString(), finishedAt:new Date().toISOString(), ts:Date.now(), quiz:S.mode==='prova'?'ylika-somata-prova':'ylika-somata-v3', mode:S.mode, sections:S.secs||null, survey:S.survey, profile:compactProfile(S.prof), recommendations:recs, answers:rawAnswers(S.list,S.answers)}, compactAnalysis(S.result)));
+    S.docId=ref.id; saveEl.textContent='Αποθηκεύτηκε ✓';
+  }catch(e){ saveEl.textContent= e&&e.code==='quota_exceeded' ? 'Δεν χωράνε άλλα αποτελέσματα' : 'Δεν αποθηκεύτηκε (χρησιμοποιήστε την «Αντιγραφή αναφοράς»)'; }
+}
+async function saveReinforce(A){
+  if(!db || !S.docId) return;
+  try{
+    const prev=(await db.collection('attempts').doc(S.docId).get()).data()||{};
+    const entry=Object.assign({at:new Date().toISOString(), concepts:S.reinfConcepts, explanations:S.rLog.map(l=>({concept:l.c,first:l.first,viewed:l.viewed,got:l.got,total:l.total})), profile:compactProfile(S.rProf), answers:rawAnswers(S.rList,S.rAnswers)}, compactAnalysis(A));
+    const list=(prev.reinforcements||[]).concat([entry]).slice(-10);
+    await db.collection('attempts').doc(S.docId).update({reinforcements:list});
+    saveEl.textContent='Αποθηκεύτηκε ✓';
+  }catch(e){}
+}
+
+/* ======================= ΙΣΤΟΡΙΚΟ ======================= */
+let hist=[];
+function renderParent(){
+  const box=$('#parent');
+  if(!db || !isEditor){ box.innerHTML=''; return; }
+  const rows = hist.length ? hist.map(h=>{ const d=new Date(h.ts); const weak=Object.keys(h.per||{}).filter(k=>h.per[k].total && h.per[k].got/h.per[k].total<.8).map(k=>CONCEPTS[k]?CONCEPTS[k].name:k); const rf=(h.reinforcements||[]).slice(-1)[0];
+      const md=h.profile&&h.profile.modes? Object.keys(h.profile.modes).filter(k=>h.profile.modes[k]!==null).sort((a,b)=>h.profile.modes[b]-h.profile.modes[a]) : [];
+      return `<tr><td>${esc(h.name||'')}</td><td>${d.toLocaleDateString('el-GR')} ${d.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'})}</td><td><b>${h.pct}%</b>${h.mode==='prova'?' <span class="note2">📝 πρόβα</span>':''}</td><td>${weak.length?esc(weak.join(', ')):'—'}</td><td>${md.length?MODES[md[0]].icon+' '+MODES[md[0]].name:'—'}</td><td>${rf?rf.pct+'%':'—'}</td></tr>`; }).join('')
+    : '<tr><td colspan="6">Δεν υπάρχουν ακόμα αποτελέσματα. Θα εμφανιστούν εδώ μόλις τελειώσει το πρώτο κουίζ.</td></tr>';
+  box.innerHTML = `<details><summary>Ιστορικό προσπαθειών (${hist.length})</summary><div class="tw"><table class="hist"><tr><th>Όνομα</th><th>Ημερομηνία</th><th>Σκορ</th><th>Θέλει ενίσχυση</th><th>Πάει καλύτερα με</th><th>Ενίσχυση</th></tr>${rows}</table></div></details>`;
+}
+(async function initCaps(){
+  if(!window.claude || !window.claude.use) return;
+  try{ db = await window.claude.use('db'); }catch(e){ db=null; }
+  try{ userCap = await window.claude.use('user'); }catch(e){ userCap=null; }
+  if(userCap){ try{ isEditor = !!(await userCap.canEdit()); }catch(e){ isEditor=false; } }
+  if(db && isEditor && !attemptsUnsub){
+    attemptsUnsub = db.collection('attempts').orderBy('ts','desc').limit(30).onSnapshot(snap=>{ hist=snap.docs.map(d=>d.data()); renderParent(); }, ()=>{});
+  }
+  renderParent();
+})();
+
+renderStart();
+})();
+</script>
+
+</body></html>
