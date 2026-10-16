@@ -199,6 +199,14 @@ table.mini th{background:var(--soft)}
 .hist2 .htr{height:14px;border-radius:999px;background:var(--soft);overflow:hidden}.hist2 .htr i{display:block;height:100%;border-radius:999px}
 .hist2 .hp{text-align:right;font-variant-numeric:tabular-nums}
 .hbig{font-size:18px;margin:0}
+.mode2{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important}
+.cz input.ct{display:inline-block;font:600 17px var(--f-body);padding:2px 6px;border:2px solid var(--c);border-radius:8px;min-height:38px;max-width:100%;margin:2px;background:#fff;vertical-align:baseline}
+.cz input.ct.ok{border-color:var(--good);background:var(--good-soft)} .cz input.ct.no{border-color:var(--bad);background:var(--bad-soft);text-decoration:line-through}
+.cz .fix{color:var(--good);margin:0 4px}
+.lcard .track{height:14px;border-radius:999px;background:var(--soft);overflow:hidden}.lcard .track i{display:block;height:100%;background:#f0a020;border-radius:999px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:4px 16px}
+.lrow{display:flex;justify-content:space-between;gap:8px;padding:5px 2px;border-bottom:1px dashed var(--line)}
+.lrow .st{color:#f0a020;letter-spacing:2px;white-space:nowrap}.lrow .st.full{color:#e8590c}
 </style>
 
 <div class="wrap">
@@ -229,7 +237,7 @@ const MODES = {
 /* how she has to answer */
 const TYPES = {
   anag:{name:'Διαλέγει από επιλογές', types:['mcq','tf','cloze']},
-  anak:{name:'Γράφει μόνη της τη λέξη', types:['fill','acro']},
+  anak:{name:'Γράφει μόνη της τη λέξη', types:['fill','acro','ctype']},
   orism:{name:'Γράφει ορισμό με δικά της λόγια', types:['def']},
   synd:{name:'Συνδέει / βάζει σε σειρά', types:['match','order']},
   arith:{name:'Γράφει αριθμό', types:['num']}
@@ -497,7 +505,7 @@ const PROVA = [
  {id:'S7',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Όλη η ποικιλία των υλικών βγαίνει από 24 στοιχεία.',a:false,mis:'Μπερδεύει τα 92 στοιχεία με τα 24 γράμματα του αλφαβήτου.',ex:'Λάθος. Από 92 στοιχεία, όπως όλες οι λέξεις από 24 γράμματα.'},
  {id:'S8',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Οι αλχημιστές τον Μεσαίωνα κατάφεραν να κάνουν την πέτρα χρυσό.',a:false,mis:'Δεν θυμάται το «Ξέρεις ότι» για τους αλχημιστές.',ex:'Λάθος. Προσπαθούσαν, αλλά δεν τα κατάφεραν.'},
  {id:'S9',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Η ύλη μπορεί να γίνει ενέργεια και η ενέργεια ύλη.',a:true,mis:'Δεν θυμάται τη σχέση ύλης και ενέργειας.',ex:'Σωστό. Ύλη και ενέργεια συνδέονται στενά.'},
- {id:'S10',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Δισεκατομμύρια άτομα χωράνε στο κεφάλι μιας καρφίτσας.',a:true,mis:'Δεν έχει καταλάβει πόσο μικρά είναι τα άτομα.',ex:'Σωστό. Τα άτομα είναι απίστευτα μικρά.'},
+ {id:'S10',sec:'sl',c:'domi',m:['vivlio'],t:'tf',q:'Η ύλη αποτελείται από μικροσκοπικά σωματίδια: δισεκατομμύρια από αυτά χωρούν στο κεφάλι μιας καρφίτσας.',a:true,mis:'Δεν έχει καταλάβει πόσο μικρά είναι τα άτομα.',ex:'Σωστό. Τα άτομα είναι απίστευτα μικρά.'},
  {id:'S11',sec:'sl',c:'enoseis',m:['vivlio'],t:'tf',q:'Στα μίγματα, τα συστατικά μπορούν να διαχωριστούν.',a:true,mis:'Δεν θυμάται τι είναι μίγμα.',ex:'Σωστό. Τα σώματα που δεν είναι μίγματα λέγονται καθαρά σώματα.'},
  {id:'S12',sec:'sl',c:'katastaseis',m:['vivlio'],t:'tf',q:'Τα υγρά έχουν σταθερό όγκο, αλλά παίρνουν το σχήμα του δοχείου.',a:true,mis:'Μπερδεύει τι μένει ίδιο και τι αλλάζει στα υγρά.',ex:'Σωστό.'},
  {id:'S13',sec:'sl',c:'maza',m:['vivlio'],t:'tf',q:'Μετράμε τη μάζα με το ογκομετρικό δοχείο.',a:false,mis:'Μπερδεύει τα όργανα: ζυγός → μάζα, ογκομετρικό δοχείο → όγκος.',ex:'Λάθος. Τη μάζα τη μετράμε με τον ζυγό σύγκρισης.'},
@@ -692,7 +700,7 @@ const GENS = {
 };
 
 /* --- ακροστιχίδες με τυχαίες λέξεις --- */
-const ACRO11=[['ΠΥΡΗΝΑΣ','Το κέντρο του ατόμου'],['ΗΛΕΚΤΡΟΝΙΑ','Περιστρέφονται γύρω από τον πυρήνα'],['ΠΡΩΤΟΝΙΑ','Βρίσκονται στον πυρήνα μαζί με τα νετρόνια'],['ΝΕΤΡΟΝΙΑ','Βρίσκονται στον πυρήνα μαζί με τα πρωτόνια'],['ΜΟΡΙΟ','Το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του'],['ΑΤΟΜΑ','Από αυτά αποτελούνται τα μόρια'],['ΜΙΓΜΑΤΑ','Σώματα που τα συστατικά τους μπορούν να διαχωριστούν'],['ΚΟΥΑΡΚ','Από αυτά αποτελούνται τα πρωτόνια και τα νετρόνια'],['ΔΗΜΟΚΡΙΤΟΣ','Ο αρχαίος Έλληνας που ονόμασε το άτομο'],['ΣΤΟΙΧΕΙΑ','Καθαρά σώματα με μόρια από ένα είδος ατόμων'],['ΕΝΩΣΕΙΣ','Χημικές …: τα μόριά τους έχουν διαφορετικά άτομα'],['ΚΑΘΑΡΑ','Τα σώματα που δεν είναι μίγματα λέγονται … σώματα'],['ΕΝΕΡΓΕΙΑ','Η ύλη μπορεί να γίνει … και αντίστροφα'],['ΑΛΧΗΜΙΣΤΕΣ','Τον Μεσαίωνα προσπαθούσαν να κάνουν την πέτρα χρυσό'],['ΚΕΝΟ','Το μόνο μέρος όπου δεν υπάρχει ύλη'],['ΘΕΜΕΛΙΩΔΗ','Έτσι λέγονται τα ηλεκτρόνια και τα κουάρκ (… σωματίδια)'],['ΥΔΡΑΡΓΥΡΟΣ','Το μέταλλο που είναι υγρό (Hg)'],['ΚΑΡΦΙΤΣΑ','Στο κεφάλι της χωράνε δισεκατομμύρια άτομα'],['ΑΕΡΙΑ','Σε αυτά τα μόρια απομακρύνονται όσο μπορούν'],['ΣΤΕΡΕΑ','Έχουν σταθερό σχήμα και σταθερό όγκο'],['ΥΓΡΑ','Έχουν σταθερό όγκο, αλλά παίρνουν το σχήμα του δοχείου'],['ΟΞΥΓΟΝΟ','Το στοιχείο με σύμβολο O'],['ΧΡΥΣΟΣ','Το στοιχείο με σύμβολο Au'],['ΥΛΗ','Από αυτήν είναι φτιαγμένα όλα τα σώματα'],['ΑΜΜΩΝΙΑ','Η χημική ένωση NH₃']];
+const ACRO11=[['ΠΥΡΗΝΑΣ','Το κέντρο του ατόμου'],['ΗΛΕΚΤΡΟΝΙΑ','Περιστρέφονται γύρω από τον πυρήνα'],['ΠΡΩΤΟΝΙΑ','Βρίσκονται στον πυρήνα μαζί με τα νετρόνια'],['ΝΕΤΡΟΝΙΑ','Βρίσκονται στον πυρήνα μαζί με τα πρωτόνια'],['ΜΟΡΙΟ','Το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του'],['ΑΤΟΜΑ','Από αυτά αποτελούνται τα μόρια'],['ΜΙΓΜΑΤΑ','Σώματα που τα συστατικά τους μπορούν να διαχωριστούν'],['ΚΟΥΑΡΚ','Από αυτά αποτελούνται τα πρωτόνια και τα νετρόνια'],['ΔΗΜΟΚΡΙΤΟΣ','Ο αρχαίος Έλληνας που ονόμασε το άτομο'],['ΣΤΟΙΧΕΙΑ','Καθαρά σώματα με μόρια από ένα είδος ατόμων'],['ΕΝΩΣΕΙΣ','Χημικές …: τα μόριά τους έχουν διαφορετικά άτομα'],['ΚΑΘΑΡΑ','Τα σώματα που δεν είναι μίγματα λέγονται … σώματα'],['ΕΝΕΡΓΕΙΑ','Η ύλη μπορεί να γίνει … και αντίστροφα'],['ΑΛΧΗΜΙΣΤΕΣ','Τον Μεσαίωνα προσπαθούσαν να κάνουν την πέτρα χρυσό'],['ΚΕΝΟ','Το μόνο μέρος όπου δεν υπάρχει ύλη'],['ΘΕΜΕΛΙΩΔΗ','Έτσι λέγονται τα ηλεκτρόνια και τα κουάρκ (… σωματίδια)'],['ΥΔΡΑΡΓΥΡΟΣ','Το μέταλλο που είναι υγρό (Hg)'],['ΚΑΡΦΙΤΣΑ','Στο κεφάλι της χωρούν δισεκατομμύρια μικροσκοπικά σωματίδια της ύλης'],['ΑΕΡΙΑ','Σε αυτά τα μόρια απομακρύνονται όσο μπορούν'],['ΣΤΕΡΕΑ','Έχουν σταθερό σχήμα και σταθερό όγκο'],['ΥΓΡΑ','Έχουν σταθερό όγκο, αλλά παίρνουν το σχήμα του δοχείου'],['ΟΞΥΓΟΝΟ','Το στοιχείο με σύμβολο O'],['ΧΡΥΣΟΣ','Το στοιχείο με σύμβολο Au'],['ΥΛΗ','Από αυτήν είναι φτιαγμένα όλα τα σώματα'],['ΑΜΜΩΝΙΑ','Η χημική ένωση NH₃']];
 const ACRO12=[['ΜΑΖΑ','Το ποσό της ύλης από το οποίο αποτελείται ένα σώμα'],['ΟΓΚΟΣ','Ο χώρος που καταλαμβάνει ένα σώμα'],['ΠΥΚΝΟΤΗΤΑ','Η ποσότητα της μάζας στη μονάδα του όγκου'],['ΣΤΑΘΜΑ','Σώματα γνωστής μάζας που βάζουμε στον ζυγό'],['ΖΥΓΟΣ','Με αυτόν μετράμε τη μάζα'],['ΛΙΤΡΟ','Μονάδα όγκου (l)'],['ΓΡΑΜΜΑΡΙΟ','Μονάδα μάζας (g)'],['ΤΟΝΟΣ','Μονάδα μάζας: 1000 kg'],['ΒΥΘΙΣΗ','Έτσι βρίσκουμε τον όγκο μιας πέτρας'],['ΧΡΥΣΟΣ','Το υλικό με τη μεγαλύτερη πυκνότητα στον πίνακα (19,3)'],['ΦΕΛΛΟΣ','Το στερεό με πυκνότητα 0,24 που επιπλέει'],['ΠΑΓΟΣ','Στερεό με πυκνότητα 0,92, μικρότερη από του νερού'],['ΠΑΡΙΣΙ','Εκεί φυλάσσεται το πρότυπο χιλιόγραμμο'],['ΘΟΛΟΣ','Εκεί φυλάσσονταν τα πρότυπα μάζας στην αρχαία Αγορά'],['ΙΣΟΡΡΟΠΕΙ','Όταν οι μάζες είναι ίσες, ο ζυγός …'],['ΣΙΔΗΡΟΣ','Μέταλλο με πυκνότητα 7,8 g/cm³'],['ΑΛΟΥΜΙΝΙΟ','Μέταλλο με πυκνότητα 2,7 g/cm³'],['ΣΕΛΗΝΗ','Εκεί η μάζα του αστροναύτη μένει ίδια'],['ΟΓΚΟΜΕΤΡΙΚΟ','Με το … δοχείο μετράμε τον όγκο'],['ΝΕΡΟ','Έχει πυκνότητα 1 g/cm³'],['ΑΘΡΟΙΣΜΑ','Η μάζα του σώματος είναι το … των μαζών των μορίων του'],['ΚΑΘΕ','Πυκνότητα = μάζα σε … cm³']];
 function acroGen(R, hiddens, bank, info){
   for(let tries=0;tries<40;tries++){
@@ -722,6 +730,121 @@ function materialize(base, seed){
 }
 const newSeed=()=>Math.floor(Math.random()*2147483647);
 
+/* ======================= ΟΡΙΣΜΟΙ: ΕΞΑΣΚΗΣΗ ΜΕΧΡΙ ΝΑ ΤΟΥΣ ΜΑΘΕΙ =======================
+   Κάθε ορισμός ανεβαίνει σκαλί-σκαλί (0→4 αστέρια):
+   0 βρες τη λέξη από τον ορισμό · 1 συμπλήρωσε τις λέξεις-κλειδιά / βρες αν ο ορισμός είναι σωστός
+   2 γράψε όλο τον ορισμό · 3 γράψε τον ξανά σε άλλο γύρο → ⭐ κατακτήθηκε.
+   Λάθος = κατεβαίνει ένα σκαλί και ξαναέρχεται λίγο αργότερα στον ίδιο γύρο. */
+const DEFS = {
+ molio:{term:'Μόριο',r:'R1',c:'domi',
+   word:{q:'___ είναι το μικρότερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του.',a:['μοριο','το μοριο'],show:'Μόριο'},
+   cloze:{text:'Μόριο είναι το [[0]] [[1]] ενός [[2]] που [[3]] τις [[4]] του.',blanks:[['μικροτερο'],['τμημα'],['συστατικου'],['διατηρει'],['ιδιοτητες']]},
+   wrong:['Μόριο είναι το μικρότερο στοιχείο ενός σώματος που διατηρεί τις ιδιότητές του.','Μόριο είναι το μεγαλύτερο τμήμα ενός συστατικού που διατηρεί τις ιδιότητές του.','Μόριο είναι το μικρότερο τμήμα ενός συστατικού που χάνει τις ιδιότητές του.']},
+ themel:{term:'Θεμελιώδη σωματίδια',r:'R5',c:'domi',
+   word:{q:'Τα ηλεκτρόνια και τα κουάρκ λέγονται ___ (ή στοιχειώδη) σωματίδια.',a:['θεμελιωδη'],show:'θεμελιώδη'},
+   cloze:{text:'Τα [[0]] και τα [[1]] λέγονται θεμελιώδη (ή στοιχειώδη) σωματίδια.',blanks:[['ηλεκτρονια'],['κουαρκ']]},
+   wrong:['Τα πρωτόνια και τα νετρόνια λέγονται θεμελιώδη σωματίδια.','Τα μόρια και τα άτομα λέγονται θεμελιώδη σωματίδια.']},
+ migmata:{term:'Μίγματα',r:'R4',c:'enoseis',
+   word:{q:'___ είναι τα σώματα που τα συστατικά τους μπορούν να διαχωριστούν.',a:['μιγματα','τα μιγματα'],show:'Μίγματα'},
+   cloze:{text:'Μίγματα είναι τα σώματα που τα [[0]] τους [[1]] να [[2]].',blanks:[['συστατικα'],['μπορουν'],['διαχωριστουν']]},
+   wrong:['Μίγματα είναι τα σώματα που τα συστατικά τους δεν μπορούν να διαχωριστούν.','Μίγματα είναι τα σώματα που τα μόριά τους έχουν ένα είδος ατόμων.']},
+ kathara:{term:'Καθαρά σώματα',r:null,c:'enoseis',
+   word:{q:'Τα σώματα που δεν είναι μίγματα λέγονται ___ σώματα.',a:['καθαρα'],show:'καθαρά'},
+   cloze:{text:'Τα σώματα που δεν είναι [[0]] λέγονται [[1]] σώματα.',blanks:[['μιγματα'],['καθαρα']]},
+   wrong:['Τα σώματα που δεν είναι μίγματα λέγονται χημικές ενώσεις.'],
+   def:{q:'Πώς λέγονται τα σώματα που δεν είναι μίγματα; Γράψε όλη την πρόταση.',model:'Τα σώματα που δεν είναι μίγματα λέγονται καθαρά σώματα.',keys:[{l:'δεν είναι μίγματα',k:['μιγματ']},{l:'καθαρά σώματα',k:['καθαρ']}]}},
+ stoixeia:{term:'Στοιχεία',r:'R2',c:'enoseis',
+   word:{q:'___ λέγονται τα καθαρά σώματα που τα μόριά τους αποτελούνται από ένα είδος ατόμων.',a:['στοιχεια','τα στοιχεια'],show:'Στοιχεία'},
+   cloze:{text:'Στοιχεία λέγονται τα [[0]] σώματα που τα [[1]] τους αποτελούνται από [[2]] [[3]] ατόμων.',blanks:[['καθαρα'],['μορια'],['ενα'],['ειδος']]},
+   wrong:['Στοιχεία λέγονται τα καθαρά σώματα που τα μόριά τους αποτελούνται από διαφορετικά άτομα.','Στοιχεία λέγονται τα πρωτόνια, τα νετρόνια και τα ηλεκτρόνια.']},
+ enoseis:{term:'Χημικές ενώσεις',r:'R3',c:'enoseis',
+   word:{q:'___ λέγονται τα καθαρά σώματα που τα μόριά τους αποτελούνται από διαφορετικά άτομα.',a:['χημικες ενωσεις','οι χημικες ενωσεις'],show:'Χημικές ενώσεις'},
+   cloze:{text:'Χημικές ενώσεις λέγονται τα [[0]] σώματα που τα [[1]] τους αποτελούνται από [[2]] άτομα.',blanks:[['καθαρα'],['μορια'],['διαφορετικα']]},
+   wrong:['Χημικές ενώσεις λέγονται τα καθαρά σώματα που τα μόριά τους αποτελούνται από ένα είδος ατόμων.','Χημικές ενώσεις λέγονται τα σώματα που τα συστατικά τους μπορούν να διαχωριστούν.']},
+ ogkos:{term:'Όγκος',r:'R6',c:'ogkos',
+   word:{q:'___ ενός σώματος είναι ο χώρος που αυτό καταλαμβάνει.',a:['ογκος','ο ογκος'],show:'Όγκος'},
+   cloze:{text:'Όγκος ενός σώματος είναι ο [[0]] που αυτό [[1]].',blanks:[['χωρος'],['καταλαμβανει']]},
+   wrong:['Όγκος ενός σώματος είναι το ποσό της ύλης από το οποίο αυτό αποτελείται.','Όγκος ενός σώματος είναι πόσο ζυγίζει.']},
+ maza:{term:'Μάζα',r:'R7',c:'maza',
+   word:{q:'Η ___ ενός σώματος εκφράζει το ποσό της ύλης από το οποίο αυτό αποτελείται.',a:['μαζα'],show:'μάζα'},
+   cloze:{text:'Η μάζα ενός σώματος εκφράζει το [[0]] της [[1]] από το οποίο αυτό [[2]].',blanks:[['ποσο'],['υλης'],['αποτελειται']]},
+   wrong:['Η μάζα ενός σώματος εκφράζει πόσο ζυγίζει.','Η μάζα ενός σώματος είναι ο χώρος που αυτό καταλαμβάνει.']},
+ pykn:{term:'Πυκνότητα',r:'R8',c:'pyknotita',
+   word:{q:'Η ___ είναι μια χαρακτηριστική ιδιότητα των σωμάτων και εκφράζει την ποσότητα της μάζας στη μονάδα του όγκου.',a:['πυκνοτητα'],show:'πυκνότητα'},
+   cloze:{text:'Η πυκνότητα είναι μια [[0]] ιδιότητα των σωμάτων και εκφράζει την ποσότητα της [[1]] στη [[2]] του [[3]].',blanks:[['χαρακτηριστικη'],['μαζας'],['μοναδα'],['ογκου']]},
+   wrong:['Η πυκνότητα εκφράζει την ποσότητα του όγκου στη μονάδα της μάζας.','Η πυκνότητα εκφράζει πόση μάζα έχει ένα σώμα.']}
+};
+const LQ = {};
+let lqN = 0;
+function defModel(id){ const d=DEFS[id]; if(d.def) return d.def.model; const r=PROVA.find(q=>q.id===d.r); return r.model; }
+function defFull(id){ const d=DEFS[id]; if(d.def) return d.def; const r=PROVA.find(q=>q.id===d.r); return {q:r.q,model:r.model,keys:r.keys}; }
+function defCard(id, lvl, R){
+  const d=DEFS[id], model=defModel(id); const ex='📖 '+model;
+  const base={c:d.c, m:['vivlio'], defId:id, lvl, ex, mis:'Δεν ξέρει ακόμα κατά λέξη τον ορισμό: '+d.term+'.'};
+  let q;
+  if(lvl<=0) q=Object.assign(base,{t:'fill',q:d.word.q,a:d.word.a,show:d.word.show,mis:{},kind:'Βρες τη λέξη'});
+  else if(lvl===1){
+    if(R()<0.6) q=Object.assign(base,{t:'ctype',q:'Συμπλήρωσε τις λέξεις που λείπουν (γράψε τις μόνη σου):',text:d.cloze.text,blanks:d.cloze.blanks.map(a=>({a})),kind:'Συμπλήρωσε τον ορισμό'});
+    else { const ok=R()<0.4; const txt= ok? model : pick(R,d.wrong);
+      q=Object.assign(base,{t:'tf',q:`Είναι σωστός αυτός ο ορισμός, όπως τον λέει το βιβλίο; «${txt}»`,a:ok,kind:'Σωστός ή λάθος ορισμός;'}); }
+  } else { const f=defFull(id); q=Object.assign(base,{t:'def',q:f.q,model:f.model,keys:f.keys,kind:'Γράψε όλο τον ορισμό'}); }
+  q.id='L'+(++lqN); LQ[q.id]=q; return q.id;
+}
+/* παραλλαγές των ορισμών στην πρόβα: τις περισσότερες φορές όλος ο ορισμός, αλλά και ανάποδα ή με κενά */
+function provaDefVar(id){ return R=>{ const r=R(); const d=DEFS[id];
+  if(r<0.6) return {};
+  if(r<0.8) return {t:'fill',q:'Ποια λέξη λείπει; '+d.word.q,a:d.word.a,show:d.word.show,mis:{}};
+  return {t:'ctype',q:'Συμπλήρωσε τον ορισμό με τις λέξεις του βιβλίου:',text:d.cloze.text,blanks:d.cloze.blanks.map(a=>({a}))}; }; }
+Object.keys(DEFS).forEach(id=>{ const r=DEFS[id].r; if(r) GENS[r]=provaDefVar(id); });
+
+const LSM='kouiz-orismoi-v1';
+function mLoad(){ const m=load(LSM)||{}; m.defs=m.defs||{}; m.sessions=m.sessions||0; Object.keys(DEFS).forEach(k=>{ m.defs[k]=m.defs[k]||{lvl:0,upAt:-1}; }); return m; }
+function stars(l){ return '★'.repeat(l)+'☆'.repeat(4-l); }
+function learnCard(){
+  const m=mLoad(); const done=Object.keys(DEFS).filter(k=>m.defs[k].lvl>=4).length; const N=Object.keys(DEFS).length;
+  const rows=Object.keys(DEFS).map(k=>`<div class="lrow"><span>${DEFS[k].term}</span><b class="st${m.defs[k].lvl>=4?' full':''}">${stars(Math.min(4,m.defs[k].lvl))}</b></div>`).join('');
+  return `<div class="card stack lcard"><h2>🎯 Οι ορισμοί σου: ${done} από ${N} κατακτήθηκαν</h2>
+    <div class="track"><i style="width:${Math.max(3,Math.round(done/N*100))}%"></i></div>
+    <div class="lgrid">${rows}</div>
+    <p class="hintline">Κάθε ορισμός θέλει 4 αστέρια: βρες τη λέξη → συμπλήρωσε → γράψε τον όλο → γράψε τον ξανά σε άλλο γύρο. Αν κάνεις λάθος, χάνεις ένα αστέρι και τον ξαναβλέπεις σε λίγο.</p></div>`;
+}
+function startLearn(){
+  const m=mLoad(); m.sessions++; store(LSM,m); S.lsession=m.sessions;
+  const R=Math.random; const ids=Object.keys(DEFS);
+  let todo=ids.filter(k=>m.defs[k].lvl<4).sort((a,b)=>m.defs[a].lvl-m.defs[b].lvl);
+  let review=shuffle(ids.filter(k=>m.defs[k].lvl>=4));
+  let pickIds = todo.length ? shuffle(todo).slice(0,9).concat(review.slice(0,2)) : review.slice(0,6);
+  S.list=shuffle(pickIds).map(k=>defCard(k,Math.min(3,m.defs[k].lvl),R));
+  S.mode='learn'; S.idx=0; S.answers={}; S.seeds={}; QC={}; S.lre={}; S.lmoves=[]; S.phase='quiz'; S.started=Date.now();
+  renderQ(); window.scrollTo({top:0});
+}
+function learnUpdate(q, g){
+  const m=mLoad(); const st=m.defs[q.defId]; const before=st.lvl; let msg='';
+  if(g.score===1){
+    if(st.lvl<3){ st.lvl++; st.upAt=S.lsession; }
+    else if(st.lvl===3 && st.upAt!==S.lsession){ st.lvl=4; st.upAt=S.lsession; }
+    msg = st.lvl>before ? (st.lvl>=4?'⭐ Τον κατέκτησες! 4 αστέρια!':`+1 αστέρι (${stars(st.lvl)})`) : (st.lvl===3?'Σωστό! Για το 4ο αστέρι, γράψ\' τον ξανά σε επόμενο γύρο.':'');
+  } else {
+    st.lvl=Math.max(0,st.lvl-1); msg=`Θα τον ξαναδείς σε λίγο (${stars(st.lvl)})`;
+    S.lre[q.defId]=(S.lre[q.defId]||0)+1;
+    if(S.lre[q.defId]<=2){ const nid=defCard(q.defId,Math.min(st.lvl,1),Math.random); const pos=Math.min(S.list.length, S.idx+3); S.list.splice(pos,0,nid); }
+  }
+  S.lmoves.push({id:q.defId,before,after:st.lvl,ok:g.score===1});
+  store(LSM,m); return msg;
+}
+function finishLearn(){
+  brandColor(); S.phase='start';
+  const ok=S.lmoves.filter(x=>x.ok).length, tot=S.lmoves.length;
+  const ups=S.lmoves.filter(x=>x.after>x.before).length;
+  const m=mLoad(); const done=Object.keys(DEFS).filter(k=>m.defs[k].lvl>=4).length; const N=Object.keys(DEFS).length;
+  const msg = done===N ? 'Τους κατέκτησες ΟΛΟΥΣ! 🏆 Τώρα κάνε κάθε μέρα έναν γύρο επανάληψης για να μη σου φύγουν.' : ups>0 ? `Μάζεψες ${ups} ${ups===1?'καινούργιο αστέρι':'καινούργια αστέρια'}! 💪` : 'Συνέχισε, κάθε γύρος σε φέρνει πιο κοντά! 🌱';
+  view.innerHTML=`<div class="stack"><div class="card stack"><h1>Τέλος γύρου!</h1><p>Σωστές απαντήσεις: <b>${ok} από ${tot}</b>. ${msg}</p>
+    ${done<N?'<p class="hintline">Κάνε 2-3 γύρους τη μέρα, με λίγες ώρες ανάμεσα. Ό,τι γράφεις σωστά σε διαφορετικούς γύρους μένει στο μυαλό!</p>':''}
+    <div class="row"><button class="btn" id="lagain">Νέος γύρος →</button><button class="btn ghost" id="lhome">Αρχική</button></div></div>${learnCard()}</div>`;
+  $('#lagain').onclick=startLearn; $('#lhome').onclick=()=>{ renderStart(); window.scrollTo({top:0}); };
+  window.scrollTo({top:0});
+}
+
 /* ======================= ΒΟΗΘΗΤΙΚΑ ======================= */
 const $ = s => document.querySelector(s);
 const view = $('#view');
@@ -737,7 +860,7 @@ function setColor(c){ const k=CONCEPTS[c]; document.documentElement.style.setPro
 function brandColor(){ document.documentElement.style.setProperty('--c','#ff6b4a'); document.documentElement.style.setProperty('--c-soft','#ffe7e0'); }
 function store(k,v){ try{ if(v===undefined) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 function load(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; } }
-const baseById = id => MAIN.find(q=>q.id===id) || PROVA.find(q=>q.id===id) || EXTRA.find(q=>q.id===id);
+const baseById = id => LQ[id] || MAIN.find(q=>q.id===id) || PROVA.find(q=>q.id===id) || EXTRA.find(q=>q.id===id);
 let QC={};
 const byId = id => { if(QC[id]) return QC[id]; const b=baseById(id); if(!b) return b; const sd=S.seeds&&S.seeds[id]; if(sd==null) return b; return (QC[id]=materialize(b,sd)); };
 function seedList(ids){ S.seeds=S.seeds||{}; ids.forEach(id=>{ S.seeds[id]=newSeed(); delete QC[id]; }); }
@@ -748,7 +871,7 @@ const typeGroup = t => Object.keys(TYPES).find(k=>TYPES[k].types.includes(t));
 function wordsOf(q){ let s=q.q; if(q.text) s+=' '+q.text; if(q.rows) s+=' '+q.rows.map(r=>r.clue).join(' '); if(q.opts) s+=' '+q.opts.join(' '); if(q.items) s+=' '+q.items.flat().join(' '); return s.split(/\s+/).filter(Boolean).length; }
 
 /* ======================= ΚΑΤΑΣΤΑΣΗ ======================= */
-let S = { mode:'diag', name:(function(){ try{ return localStorage.getItem('kouiz-name')||''; }catch(e){ return ''; } })(), phase:'start', list:[], idx:0, answers:{}, started:null, survey:{}, rList:[], rIdx:0, rAnswers:{}, rLog:[], docId:null };
+let S = { mode:'learn', name:(function(){ try{ return localStorage.getItem('kouiz-name')||''; }catch(e){ return ''; } })(), phase:'start', list:[], idx:0, answers:{}, started:null, survey:{}, rList:[], rIdx:0, rAnswers:{}, rLog:[], docId:null };
 let db=null, userCap=null, isEditor=false, attemptsUnsub=null;
 
 /* ======================= ΒΑΘΜΟΛΟΓΗΣΗ ======================= */
@@ -760,6 +883,7 @@ function grade(q, resp){
   if(q.t==='match'){ let c=0; q.items.forEach((it,i)=>{ if(resp[i]===it[1]) c++; }); const sc=c/q.items.length; return {score:sc, mis: sc<1?(q.mis||null):null, given:q.items.map((it,i)=>it[0]+' → '+(resp[i]||'—')).join(' · '), right:q.items.map(it=>it[0]+' → '+it[1]).join(' · ')}; }
   if(q.t==='acro'){ const ok=q.rows.map((r,i)=>norm(resp[i]).replace(/\s/g,'')===norm(r.w)); const c=ok.filter(Boolean).length; const sc=c/q.rows.length; const miss=q.rows.filter((r,i)=>!ok[i]).map(r=>r.w); return {score:sc, n:c, of:q.rows.length, okRows:ok, mis: sc<1?(q.mis||null):null, given:q.rows.map((r,i)=>(resp[i]||'—').toUpperCase()).join(', '), right:q.rows.map(r=>r.w).join(', ')+' → '+q.hidden}; }
   if(q.t==='def'){ const n=' '+norm(resp)+' '; const hit=q.keys.map(g=>g.k.some(k=>n.includes(norm(k)))); const c=hit.filter(Boolean).length; const sc=c/q.keys.length; return {score:sc, n:c, of:q.keys.length, hit, mis: sc<1?(q.mis||null):null, given:resp||'(κενό)', right:q.model}; }
+  if(q.t==='ctype'){ const ok=q.blanks.map((b,i)=>b.a.some(x=>norm(x)===norm(resp[i]))); const c=ok.filter(Boolean).length; const sc=c/q.blanks.length; return {score:sc, n:c, of:q.blanks.length, okB:ok, mis: sc<1?(q.mis||null):null, given:q.blanks.map((b,i)=>resp[i]||'—').join(' · '), right:q.blanks.map(b=>b.a[0]).join(' · ')}; }
   if(q.t==='cloze'){ const used={}; const ok=q.blanks.map((b,i)=>{ const r=resp[i]; if(!r || !b.a.includes(r)) return false; if(b.g){ used[b.g]=used[b.g]||[]; if(used[b.g].includes(r)) return false; used[b.g].push(r); } return true; }); const c=ok.filter(Boolean).length; const sc=c/q.blanks.length; return {score:sc, n:c, of:q.blanks.length, okB:ok, mis: sc<1?(q.mis||null):null, given:q.blanks.map((b,i)=>resp[i]||'—').join(' · '), right:clozeRight(q)}; }
   if(q.t==='order'){ let c=0; q.items.forEach((it,i)=>{ if(resp[i]===it) c++; }); const sc=c/q.items.length; return {score:sc, mis: sc<1?(q.mis||null):null, given:resp.join(' → '), right:q.items.join(' → ')}; }
 }
@@ -798,35 +922,35 @@ function renderStart(){
   brandColor();
   const saved = load(LS);
   const counts = Object.keys(CONCEPTS).map(k=>`<span class="pill" style="background:${CONCEPTS[k].soft};color:${CONCEPTS[k].col}">${CONCEPTS[k].name}</span>`).join('');
-  const P=S.mode==='prova';
+  const P=S.mode==='prova', LM=S.mode==='learn';
   view.innerHTML = `<div class="card stack">
     <h1>Κουίζ: Υλικά σώματα 🔬</h1>
-    <div class="mode2"><button data-m="diag" class="${P?'':'sel'}"><span>🧭</span>Διαγνωστικό κουίζ<small>${MAIN.length} ερωτήσεις · δείχνει τι ξέρεις και πώς μαθαίνεις · νέες παραλλαγές κάθε φορά</small></button>
-      <button data-m="prova" class="${P?'sel':''}"><span>📝</span>Πρόβα διαγωνίσματος<small>${provaTotal()} ερωτήσεις · όπως το τεστ του σχολείου · κάθε φορά διαφορετικές</small></button></div>
-    ${P?`<p><b>Πρόβα διαγωνίσματος:</b> ${Object.keys(SECTIONS).map(k=>SECTIONS[k].name.split('· ')[1]+' ('+provaCount(k)+')').join(', ')}. Οι ασκήσεις είναι από το Τετράδιο Εργασιών και τη θεωρία του βιβλίου.</p>`:`<p>${MAIN.length} ερωτήσεις: κενά, Σωστό/Λάθος, πολλαπλής επιλογής, αντιστοιχίσεις, σειρά, εικόνες και πράξεις.</p>`}
-    <p>Σε κάθε ερώτηση, πριν τον έλεγχο, πες μας και <b>πόσο σίγουρη είσαι</b> (🤔 Μαντεύω · 🙂 Νομίζω · 😎 Σίγουρη). Δεν πειράζει να μαντέψεις! Απλώς πες την αλήθεια, για να δούμε τι ξέρεις.</p>
-    <p>Στο τέλος θα δεις <b>τι ξέρεις καλά</b> και <b>τι θέλει λίγη δουλειά</b>. Μετά κάνουμε μαζί εξάσκηση!</p>
-    <div class="pills">${counts}</div>
-    ${historyCard(S.mode,false)}
+    <div class="mode2"><button data-m="learn" class="${LM?'sel':''}"><span>🎯</span>Μάθε τους ορισμούς<small>γύροι εξάσκησης μέχρι να τους ξέρεις απ' έξω · μαζεύεις αστέρια</small></button>
+      <button data-m="prova" class="${P?'sel':''}"><span>📝</span>Πρόβα διαγωνίσματος<small>${provaTotal()} ερωτήσεις · όπως το τεστ του σχολείου · κάθε φορά διαφορετικές</small></button>
+      <button data-m="diag" class="${!P&&!LM?'sel':''}"><span>🧭</span>Διαγνωστικό κουίζ<small>${MAIN.length} ερωτήσεις · δείχνει τι ξέρεις και τι θέλει δουλειά</small></button></div>
+    ${LM?`<p><b>Μάθε τους ορισμούς:</b> σε κάθε γύρο έρχονται οι ${Object.keys(DEFS).length} ορισμοί του βιβλίου με διαφορετικούς τρόπους: βρες τη λέξη, συμπλήρωσε τα κενά, βρες αν ο ορισμός είναι σωστός, γράψε τον όλο. Μάζεψε 4 αστέρια σε όλους!</p>`
+     : P?`<p><b>Πρόβα διαγωνίσματος:</b> ${Object.keys(SECTIONS).map(k=>SECTIONS[k].name.split('· ')[1]+' ('+provaCount(k)+')').join(', ')}. Οι ασκήσεις είναι από το Τετράδιο Εργασιών και τη θεωρία του βιβλίου.</p>`:`<p>${MAIN.length} ερωτήσεις: κενά, Σωστό/Λάθος, πολλαπλής επιλογής, αντιστοιχίσεις, σειρά, εικόνες και πράξεις.</p>`}
+    ${LM?'':`<p>Σε κάθε ερώτηση, πριν τον έλεγχο, πες μας και <b>πόσο σίγουρη είσαι</b> (🤔 Μαντεύω · 🙂 Νομίζω · 😎 Σίγουρη). Δεν πειράζει να μαντέψεις!</p>
+    <p>Στο τέλος θα δεις <b>τι ξέρεις καλά</b> και <b>τι θέλει λίγη δουλειά</b>. Μετά κάνουμε μαζί εξάσκηση!</p>`}
+    ${LM?learnCard():historyCard(S.mode,false)}
     <div><label class="lbl" for="nm">Πώς σε λένε;</label><input type="text" id="nm" value="${esc(S.name)}" autocomplete="off"></div>
-    <div class="row"><button class="btn" id="go">Ξεκίνα! →</button><button class="btn ghost" id="printv">🖨️ Διαγώνισμα για εκτύπωση</button>
-      ${saved && saved.phase==='quiz' ? `<button class="btn ghost" id="resume">Συνέχισε ${saved.mode==='prova'?'την πρόβα':'το κουίζ'} από την ερώτηση ${saved.idx+1}</button>` : ''}</div>
+    <div class="row"><button class="btn" id="go">Ξεκίνα! →</button>
+      ${saved && saved.phase==='quiz' && !LM ? `<button class="btn ghost" id="resume">Συνέχισε ${saved.mode==='prova'?'την πρόβα':'το κουίζ'} από την ερώτηση ${saved.idx+1}</button>` : ''}</div>
   </div>`;
   view.querySelectorAll('.mode2 button').forEach(b=>b.onclick=()=>{ S.name=($('#nm').value.trim()||S.name); S.mode=b.dataset.m; renderStart(); });
-  $('#go').onclick = ()=>{ S.name=$('#nm').value.trim(); try{ localStorage.setItem('kouiz-name',S.name); }catch(e){} S.list= S.mode==='prova' ? provaList() : shuffleWithinBlocks(); S.seeds={}; QC={}; seedList(S.list); S.idx=0; S.answers={}; S.survey={}; S.rLog=[]; S.reinf=null; S.started=Date.now(); S.phase='quiz'; S.docId=null; persist(); renderQ(); };
-  $('#printv').onclick=()=>{ S.name=($('#nm').value.trim()||S.name); renderPrint(); };
+  $('#go').onclick = ()=>{ S.name=$('#nm').value.trim(); try{ localStorage.setItem('kouiz-name',S.name); }catch(e){} if(S.mode==='learn'){ startLearn(); return; } S.list= S.mode==='prova' ? provaList() : shuffleWithinBlocks(); S.seeds={}; QC={}; seedList(S.list); S.idx=0; S.answers={}; S.survey={}; S.rLog=[]; S.reinf=null; S.started=Date.now(); S.phase='quiz'; S.docId=null; persist(); renderQ(); };
   if($('#resume')) $('#resume').onclick = ()=>{ Object.assign(S, saved); QC={}; renderQ(); };
 }
-function shuffleWithinBlocks(){ let out=[]; Object.keys(CONCEPTS).forEach(c=>{ out=out.concat(shuffle(MAIN.filter(q=>q.c===c).map(q=>q.id))); }); return out; }
+function shuffleWithinBlocks(){ return shuffle(MAIN.map(q=>q.id)); }
 function provaList(){ let out=[]; Object.keys(SECTIONS).forEach(k=>{ let ids=PROVA.filter(q=>q.sec===k).map(q=>q.id); if(k!=='te'&&k!=='akro') ids=shuffle(ids); if(PN[k]) ids=ids.slice(0,PN[k]); out=out.concat(ids); }); return out; }
-function persist(){ if(S.phase==='quiz') store(LS,{seeds:S.seeds,mode:S.mode,phase:S.phase,list:S.list,idx:S.idx,answers:S.answers,name:S.name,started:S.started}); else store(LS); }
+function persist(){ if(S.mode==='learn') return; if(S.phase==='quiz') store(LS,{seeds:S.seeds,mode:S.mode,phase:S.phase,list:S.list,idx:S.idx,answers:S.answers,name:S.name,started:S.started}); else store(LS); }
 
 /* ======================= ΕΡΩΤΗΣΗ ======================= */
 let cur=null;
 function renderQ(isR){
   const list=isR?S.rList:S.list, idx=isR?S.rIdx:S.idx;
-  const q=byId(list[idx]); setColor(q.c);
-  cur={q, resp:(q.t==='match'?q.items.map(()=>''):q.t==='order'?[]:q.t==='acro'?q.rows.map(()=>''):q.t==='cloze'?q.blanks.map(()=>''):null), conf:null, checked:false, isR, t0:performance.now()};
+  const q=byId(list[idx]); if(isR) setColor(q.c); else brandColor();
+  cur={q, resp:(q.t==='match'?q.items.map(()=>''):q.t==='order'?[]:q.t==='acro'?q.rows.map(()=>''):(q.t==='cloze'||q.t==='ctype')?q.blanks.map(()=>''):null), conf:null, checked:false, isR, t0:performance.now()};
   const total=list.length;
   const prompt = q.t==='fill' ? esc(q.q).replace('___','<span class="gap"></span>') : esc(q.q);
   let body='';
@@ -837,20 +961,21 @@ function renderQ(isR){
   if(q.t==='match'){ body=q.items.map((it,i)=>`<div class="matchrow" data-r="${i}"><span class="k">${esc(it[0])}</span><select id="m${i}" data-i="${i}"><option value="">διάλεξε…</option>${q.choices.map(c=>`<option>${esc(c)}</option>`).join('')}</select></div>`).join(''); }
   if(q.t==='acro'){ body=`<div id="ag">${acroGrid(q)}</div>`+q.rows.map((r,i)=>`<div class="acrow"><label class="lbl" for="a${i}" style="margin:0">${i+1}. ${esc(r.clue)} <span class="note2">(${r.w.length} γράμματα)</span></label><input type="text" id="a${i}" data-i="${i}" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="${r.w.length+2}"></div>`).join('')+`<p class="hintline">Γράψε κάθε λέξη στο κουτάκι της. Δεν χρειάζονται τόνοι.</p>`; }
   if(q.t==='def'){ body=`<div><label class="lbl" for="ans">Γράψε τον ορισμό, όπως στο βιβλίο:</label><textarea class="def" id="ans" autocomplete="off" spellcheck="false"></textarea></div><p class="hintline">Ελέγχουμε αν έχεις γράψει τις λέξεις-κλειδιά.</p>`; }
+  if(q.t==='ctype'){ body=`<div class="cz">${esc(q.text).replace(/\[\[(\d+)\]\]/g,(m,i)=>`<input type="text" class="ct" data-i="${i}" style="width:${Math.max(5,q.blanks[i].a[0].length+2)}ch" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="κενό ${+i+1}">`)}</div><p class="hintline">Δεν πειράζει αν ξεχάσεις τους τόνους.</p>`; }
   if(q.t==='cloze'){ const sel=i=>`<select data-i="${i}" aria-label="κενό ${i+1}"><option value="">(${i+1}) …</option>${q.bank.map(w=>`<option>${esc(w)}</option>`).join('')}</select>`; body=`<div class="cz">${esc(q.text).replace(/\[\[(\d+)\]\]/g,(m,i)=>sel(+i))}</div>`; }
   if(q.t==='order'){ cur.pool=shuffle(q.items); if(cur.pool.join()===q.items.join()) cur.pool.reverse(); body=`<p class="hintline">Πάτα τις λέξεις με τη σωστή σειρά. Αν κάνεις λάθος, πάτα μια λέξη από κάτω για να τη βγάλεις.</p><div class="pool" id="pool"></div><div class="seq" id="seq" aria-label="Η σειρά σου"></div>`; }
   view.innerHTML = `<div class="card">
     <div class="prog"><i style="width:${(idx/total)*100}%"></i></div>
-    <div class="qmeta"><span class="tag">${isR?'Ενίσχυση · ':''}${q.sec&&!isR?SECTIONS[q.sec].name:CONCEPTS[q.c].name}</span><span>Ερώτηση ${idx+1} από ${total}</span></div>
+    <div class="qmeta"><span class="tag">${isR?'Ενίσχυση':S.mode==='learn'?'🎯 '+(q.kind||'Ορισμοί'):(q.sec?SECTIONS[q.sec].name:'Κουίζ')}</span><span>Ερώτηση ${idx+1} από ${total}</span></div>
     <div class="qtext">${prompt}</div>
     ${q.fig? q.fig():''}
     ${body}
-    <div class="conf" id="conf"><p>Πόσο σίγουρη είσαι;</p><div class="cb">${CONF.map(c=>`<button data-c="${c.v}"><span>${c.icon}</span>${c.name}</button>`).join('')}</div></div>
+    <div class="conf" id="conf"${S.mode==='learn'&&!isR?' hidden':''}><p>Πόσο σίγουρη είσαι;</p><div class="cb">${CONF.map(c=>`<button data-c="${c.v}"><span>${c.icon}</span>${c.name}</button>`).join('')}</div></div>
     <div id="fbx"></div>
     <div class="row end" style="margin-top:14px"><button class="btn c" id="check" disabled>Έλεγχος</button></div>
   </div>`;
   const check=$('#check');
-  const ready=()=>{ check.disabled = !(answerReady() && cur.conf!==null); };
+  const ready=()=>{ check.disabled = !(answerReady() && (cur.conf!==null || (S.mode==='learn'&&!isR))); };
   function answerReady(){
     if(q.t==='mcq'||q.t==='tf') return cur.resp!==null;
     if(q.t==='fill') return norm(cur.resp).length>0;
@@ -860,6 +985,7 @@ function renderQ(isR){
     if(q.t==='acro') return cur.resp.some(v=>norm(v).length>0);
     if(q.t==='def') return norm(cur.resp).length>=3;
     if(q.t==='cloze') return cur.resp.every(v=>v);
+    if(q.t==='ctype') return cur.resp.every(v=>norm(v).length>0);
   }
   if(q.t==='mcq') view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(cur.checked) return; cur.resp=+b.dataset.i; view.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b)); ready(); });
   if(q.t==='tf') view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ if(cur.checked) return; cur.resp=b.dataset.v==='1'; view.querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b)); ready(); });
@@ -868,6 +994,7 @@ function renderQ(isR){
   if(q.t==='order') drawOrder();
   if(q.t==='def'){ const inp=$('#ans'); inp.oninput=()=>{ cur.resp=inp.value; ready(); }; }
   if(q.t==='acro') view.querySelectorAll('.acrow input').forEach(inp=>{ inp.oninput=()=>{ cur.resp[+inp.dataset.i]=inp.value; $('#ag').innerHTML=acroGrid(q,cur.resp.map(upLetters)); ready(); }; inp.onkeydown=e=>{ if(e.key==='Enter'){ const n=$('#a'+(+inp.dataset.i+1)); if(n) n.focus(); } }; });
+  if(q.t==='ctype'){ const ins=[...view.querySelectorAll('.cz input.ct')]; ins.forEach((inp,k)=>{ inp.oninput=()=>{ cur.resp[+inp.dataset.i]=inp.value; ready(); }; inp.onkeydown=e=>{ if(e.key==='Enter'){ if(ins[k+1]) ins[k+1].focus(); else if(!check.disabled) doCheck(); } }; }); setTimeout(()=>ins[0]&&ins[0].focus(),30); }
   if(q.t==='cloze') view.querySelectorAll('.cz select').forEach(s=>s.onchange=()=>{ cur.resp[+s.dataset.i]=s.value; ready(); });
   view.querySelectorAll('#conf button').forEach(b=>b.onclick=()=>{ if(cur.checked) return; cur.conf=+b.dataset.c; view.querySelectorAll('#conf button').forEach(x=>x.classList.toggle('sel',x===b)); ready(); });
   check.onclick=doCheck; cur.ready=ready;
@@ -895,16 +1022,18 @@ function doCheck(){
   if(q.t==='order'){ drawOrder(); $('#seq').classList.add(g.score===1?'ok':'no'); }
   if(q.t==='acro'){ view.querySelectorAll('.acrow input').forEach(inp=>{ const i=+inp.dataset.i; inp.disabled=true; inp.classList.add(g.okRows[i]?'ok':'no'); if(!g.okRows[i]) inp.insertAdjacentHTML('afterend',`<span class="note2">Σωστό: <b>${q.rows[i].w}</b></span>`); }); $('#ag').innerHTML=acroGrid(q,q.rows.map(r=>r.w)); }
   if(q.t==='def'){ $('#ans').disabled=true; }
+  if(q.t==='ctype') view.querySelectorAll('.cz input.ct').forEach(inp=>{ const i=+inp.dataset.i; inp.disabled=true; inp.classList.add(g.okB[i]?'ok':'no'); if(!g.okB[i]) inp.insertAdjacentHTML('afterend',`<b class="fix">${esc(q.blanks[i].a[0])}</b>`); });
   if(q.t==='cloze') view.querySelectorAll('.cz select').forEach(s=>{ s.disabled=true; s.classList.add(g.okB[+s.dataset.i]?'ok':'no'); });
   view.querySelectorAll('#conf button').forEach(b=>b.disabled=true);
   const cls = g.score===1?'ok':(g.score>0?'part':'no');
   let head = g.score===1 ? PRAISE[Math.floor(Math.random()*PRAISE.length)] : g.score>0 ? `Σχεδόν! (${g.of?g.n:Math.round(g.score*q.items.length)} από ${g.of||q.items.length} σωστά)` : 'Όχι ακριβώς…';
   if(g.score===1 && cur.conf===0) head+=' Και ήταν μαντεψιά! 🍀 Κοίτα την εξήγηση για να το θυμάσαι.';
   if(g.score<1 && cur.conf===2) head+=' Ήσουν σίγουρη, οπότε αυτό αξίζει προσοχή! 👀';
+  if(S.mode==='learn' && !cur.isR){ const lm=learnUpdate(q,g); if(lm) head+=' '+lm; }
   const showRight = g.score<1 ? `<div>Το σωστό: <b>${esc(g.right)}</b></div>` : '';
   let extra='';
   if(q.t==='def') extra=`<div class="keys">${q.keys.map((k,i)=>`<span class="${g.hit[i]?'y':'n'}">${g.hit[i]?'✔':'✘'} ${esc(k.l)}</span>`).join('')}</div><div>📖 Ο ορισμός του βιβλίου: <b>${esc(q.model)}</b></div>`;
-  const showR = (q.t==='def'||q.t==='acro') ? '' : showRight;
+  const showR = (q.t==='def'||q.t==='acro'||(S.mode==='learn'&&q.t==='tf')) ? '' : showRight;
   $('#fbx').innerHTML = `<div class="fb ${cls}"><strong>${head}</strong>${showR}${extra}<div>${esc(q.ex)}</div></div>`;
   const btn=$('#check'); btn.textContent = isLast()? (cur.isR?'Δες πώς τα πήγες →':'Συνέχεια →') : 'Επόμενη →'; btn.disabled=false; btn.id='next'; btn.onclick=next;
   if(!cur.isR) persist();
@@ -917,19 +1046,17 @@ function next(){
     else finishReinforce();
   } else {
     if(S.idx < S.list.length-1){ S.idx++; persist(); renderQ(); window.scrollTo({top:0}); }
-    else renderSurvey();
+    else if(S.mode==='learn') finishLearn(); else renderSurvey();
   }
 }
 
 /* ======================= ΜΙΚΡΟ ΕΡΩΤΗΜΑΤΟΛΟΓΙΟ ======================= */
 const SURVEY=[
-  {k:'pref',q:'Τι σε βοηθάει πιο πολύ να καταλάβεις κάτι καινούργιο;',o:[['eikona','🖼️ Να βλέπω εικόνες και σχήματα'],['zoi','🍎 Παραδείγματα από τη ζωή'],['vivlio','📖 Να το διαβάζω στο βιβλίο'],['peirama','🧪 Να κάνω πείραμα'],['akouo','👂 Να μου το εξηγεί κάποιος']]},
-  {k:'felt',q:'Πώς σου φάνηκε το κουίζ;',o:[['easy','😀 Εύκολο'],['ok','🙂 Μέτριο'],['hard','😓 Δύσκολο']]},
-  {k:'hardest',q:'Ποιο κομμάτι σου φάνηκε πιο δύσκολο;',o:Object.keys(CONCEPTS).map(k=>[k,CONCEPTS[k].name]).concat([['none','Κανένα!']])}
+  {k:'felt',q:'Πώς σου φάνηκε το διαγώνισμα;',o:[['easy','😀 Εύκολο'],['ok','🙂 Μέτριο'],['hard','😓 Δύσκολο']]}
 ];
 function renderSurvey(){
   brandColor(); S.phase='survey'; persist();
-  view.innerHTML = `<div class="card stack"><h2>Τελείωσες! 🎉 Τρεις γρήγορες ερωτήσεις για σένα</h2><p class="hintline">Εδώ δεν υπάρχει σωστό ή λάθος.</p>
+  view.innerHTML = `<div class="card stack"><h2>Τελείωσες! 🎉 Μια γρήγορη ερώτηση</h2><p class="hintline">Εδώ δεν υπάρχει σωστό ή λάθος.</p>
     ${SURVEY.map(s=>`<div><p style="font-weight:700">${s.q}</p><div class="opts">${s.o.map(o=>`<button class="opt" data-k="${s.k}" data-v="${o[0]}"><span>${o[1]}</span></button>`).join('')}</div></div>`).join('')}
     <div class="row end"><button class="btn" id="sdone" disabled>Δες τα αποτελέσματα →</button></div></div>`;
   view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S.survey[b.dataset.k]=b.dataset.v; view.querySelectorAll(`.opt[data-k="${b.dataset.k}"]`).forEach(x=>x.classList.toggle('sel',x===b)); $('#sdone').disabled = SURVEY.some(s=>!S.survey[s.k]); });
@@ -1045,11 +1172,9 @@ function renderResults(){
       <p>${weak.length?`Για κάθε κομμάτι θα διαλέξεις <b>πώς θέλεις να σου το εξηγήσουμε</b> (με εικόνα, με παράδειγμα ή όπως το βιβλίο) και μετά θα απαντήσεις σε νέες ερωτήσεις: <b>${weak.map(k=>CONCEPTS[k].name).join(', ')}</b>.`:'Τα πήγες τέλεια παντού! Μπορείς να κάνεις εξάσκηση σε όλες τις ενότητες με νέες ερωτήσεις.'}</p>
       <div class="row"><button class="btn" id="reinf">${weak.length?'Ξεκίνα την ενίσχυση →':'Εξάσκηση σε όλα →'}</button><button class="btn ghost" id="again">Ξανά το κουίζ</button></div></div>
     <details class="card"><summary>Όλες οι λάθος απαντήσεις (${A.wrong.length})</summary><div class="review" style="margin-top:10px">${wrongHtml}</div></details>
-    ${profileCard()}
   </div>`;
   $('#reinf').onclick=()=>startReinforce(weak.length?weak:Object.keys(CONCEPTS));
   $('#again').onclick=()=>{ S.phase='start'; renderStart(); window.scrollTo({top:0}); };
-  bindProfileCard();
   window.scrollTo({top:0});
   renderParent();
 }
