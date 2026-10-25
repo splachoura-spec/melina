@@ -925,6 +925,7 @@ function renderStart(){
   const P=S.mode==='prova', LM=S.mode==='learn';
   view.innerHTML = `<div class="card stack">
     <h1>Κουίζ: Υλικά σώματα 🔬</h1>
+    <a class="btn ghost" href="istoria.html" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">🏛️ Πήγαινε στο κουίζ Ιστορίας (μαθήματα 5-12) →</a>
     <div class="mode2"><button data-m="learn" class="${LM?'sel':''}"><span>🎯</span>Μάθε τους ορισμούς<small>γύροι εξάσκησης μέχρι να τους ξέρεις απ' έξω · μαζεύεις αστέρια</small></button>
       <button data-m="prova" class="${P?'sel':''}"><span>📝</span>Πρόβα διαγωνίσματος<small>${provaTotal()} ερωτήσεις · όπως το τεστ του σχολείου · κάθε φορά διαφορετικές</small></button>
       <button data-m="diag" class="${!P&&!LM?'sel':''}"><span>🧭</span>Διαγνωστικό κουίζ<small>${MAIN.length} ερωτήσεις · δείχνει τι ξέρεις και τι θέλει δουλειά</small></button></div>
