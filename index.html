@@ -1385,4 +1385,41 @@ renderStart();
 })();
 </script>
 
+<div class="wrap" id="bkp" style="margin-top:8px">
+  <details style="font:14px var(--f-body,system-ui);color:#556;border:1px dashed #c9d2da;border-radius:12px;padding:8px 12px">
+    <summary style="cursor:pointer">💾 Αντίγραφο της προόδου (για τον γονιό)</summary>
+    <p style="margin:8px 0">Η πρόοδος (αστέρια, προσπάθειες) μένει μόνο σε αυτή τη συσκευή. Κράτα ένα αντίγραφο κάθε τόσο. Αν χαθεί κάτι, το φέρνεις πίσω από εδώ. Το ίδιο αρχείο κρατάει και τα δύο κουίζ Φυσικών.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" id="bkpSave" style="font:600 15px inherit;padding:8px 14px;border-radius:10px;border:2px solid #1d2b36;background:#fff;cursor:pointer">⬇️ Κράτα αντίγραφο</button>
+      <label style="font:600 15px inherit;padding:8px 14px;border-radius:10px;border:2px solid #1d2b36;background:#fff;cursor:pointer">⬆️ Φέρε πίσω αντίγραφο<input type="file" id="bkpLoad" accept=".json,application/json" style="display:none"></label>
+    </div>
+    <p id="bkpMsg" style="margin:8px 0 0"></p>
+  </details>
+</div>
+<script>
+(function(){
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  var msg=document.getElementById('bkpMsg');
+  function keys(){ var out={}; try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k && k.indexOf('kouiz-')===0) out[k]=localStorage.getItem(k); } }catch(e){} return out; }
+  document.getElementById('bkpSave').onclick=function(){
+    var d=keys(), n=Object.keys(d).length;
+    if(!n){ msg.textContent='Δεν υπάρχει ακόμα αποθηκευμένη πρόοδος σε αυτή τη συσκευή.'; return; }
+    var blob=new Blob([JSON.stringify({app:'melina-kouiz',saved:new Date().toISOString(),data:d})],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='melina-kouiz-antigrafo-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+    msg.textContent='✅ Έτοιμο: κατέβηκε το αρχείο αντιγράφου.';
+  };
+  document.getElementById('bkpLoad').onchange=function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f) return;
+    var r=new FileReader(); r.onload=function(){
+      try{ var j=JSON.parse(r.result); if(!j||j.app!=='melina-kouiz'||!j.data) throw 0;
+        if(!confirm('Να φέρω πίσω την πρόοδο από το αντίγραφο της '+new Date(j.saved).toLocaleDateString('el-GR')+'; Θα αντικαταστήσει την τωρινή.')) return;
+        Object.keys(j.data).forEach(function(k){ if(k.indexOf('kouiz-')===0) localStorage.setItem(k,j.data[k]); });
+        location.reload();
+      }catch(err){ msg.textContent='Αυτό το αρχείο δεν είναι αντίγραφο του κουίζ.'; }
+    }; r.readAsText(f);
+  };
+})();
+</script>
+
 </body></html>
